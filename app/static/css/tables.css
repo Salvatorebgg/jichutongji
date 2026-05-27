@@ -1,0 +1,98 @@
+/* ═══════════════════════════════════════════════════════════
+   Tables — Clinical Three-Line Table Standard v1.0
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Three-Line Table (Medical Standard) ──────────────────── */
+.compact-table-wrap {
+  overflow: auto;
+  max-width: 100%;
+}
+
+.three-line {
+  width: 100%;
+  min-width: 480px;
+  border-collapse: collapse;
+  background: #fff;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.three-line caption {
+  caption-side: bottom;
+  padding-top: 6px;
+  color: var(--muted);
+  text-align: left;
+  font-size: 11px;
+}
+
+.three-line th {
+  border-top: 2px solid var(--ink);
+  border-bottom: 1.5px solid var(--ink);
+  background: #f7faf9;
+  color: var(--ink);
+  padding: 6px 8px;
+  text-align: left;
+  white-space: nowrap;
+  font-weight: 750;
+  font-size: 11.5px;
+}
+
+.three-line td {
+  border-bottom: 1px solid var(--line);
+  padding: 5px 8px;
+  vertical-align: top;
+  color: var(--text);
+}
+
+.three-line tbody tr:nth-child(even) td {
+  background: #fbfdfc;
+}
+
+.three-line tbody tr:hover td {
+  background: #f4faf8;
+}
+
+.three-line td:first-child,
+.three-line th:first-child {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.three-line tr:last-child td {
+  border-bottom: 2px solid var(--ink);
+}
+
+/* ── Medical Table ────────────────────────────────────────── */
+.medical-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  font-size: 12px;
+}
+
+.medical-table th {
+  border-top: 2px solid var(--ink);
+  border-bottom: 1.5px solid var(--ink);
+  background: #f7faf9;
+  color: var(--ink);
+  padding: 6px 8px;
+  text-align: left;
+  font-weight: 750;
+}
+
+.medical-table td {
+  border-bottom: 1px solid var(--line);
+  padding: 5px 8px;
+  vertical-align: top;
+  color: var(--text);
+}
+
+.medical-table tr:last-child td {
+  border-bottom: 2px solid var(--ink);
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .three-line { min-width: 360px; font-size: 11px; }
+  .three-line th, .three-line td { padding: 4px 6px; }
+}

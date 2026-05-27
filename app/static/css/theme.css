@@ -1,0 +1,81 @@
+/* ═══════════════════════════════════════════════════════════
+   Theme — Clinical Statistics Platform v1.0
+   Design tokens, reset, animations
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+  --ink: #1a2b32;
+  --text: #2d4a54;
+  --muted: #6b8590;
+  --line: #e0ebe7;
+  --line-soft: rgba(224, 235, 231, 0.7);
+  --card: rgba(255, 255, 255, 0.82);
+  --card-solid: #ffffff;
+  --paper: #f6faf8;
+  --teal: #0d7377;
+  --teal-light: #e8f4f3;
+  --rose: #c0616e;
+  --amber: #c8922a;
+  --navy: #2b4c6f;
+  --green: #2d8a4e;
+  --shadow-sm: 0 2px 8px rgba(30, 60, 50, 0.04);
+  --shadow: 0 4px 20px rgba(30, 60, 50, 0.06);
+  --shadow-lg: 0 8px 32px rgba(30, 60, 50, 0.08);
+  --radius: 10px;
+  --radius-sm: 7px;
+  --duration: 0.18s;
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --font: "Noto Sans SC", "Microsoft YaHei", -apple-system, sans-serif;
+}
+
+/* ── Reset ───────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+[hidden] { display: none !important; }
+
+html {
+  min-height: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font);
+  font-size: 14px;
+  color: var(--ink);
+  background: linear-gradient(160deg, #f8fcfa 0%, #f4f8f6 50%, #faf8f6 100%);
+  background-attachment: fixed;
+  line-height: 1.6;
+}
+
+button, input, select { font: inherit; }
+button { cursor: pointer; }
+
+/* ── Animations ──────────────────────────────────────────── */
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Scrollbar ───────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: rgba(200, 215, 210, 0.25); border-radius: 10px; }
+::-webkit-scrollbar-thumb { background: #b0c8bf; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #8fada3; }
+
+/* ── Selection ───────────────────────────────────────────── */
+::selection { background: rgba(13, 115, 119, 0.15); color: var(--ink); }

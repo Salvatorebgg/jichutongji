@@ -1,0 +1,401 @@
+﻿patient_id,age,sex,bmi,sbp,dbp,glucose,cholesterol,crp,group,outcome,education,smoking
+P0001,45,Male,26.7,112,67,4.36,4.75,0.19,Treatment B,Worsened,Tertiary,Never
+P0002,62,Female,21.9,125,77,6.18,4.39,1.53,Treatment A,Worsened,Primary,Current
+P0003,42,Male,34.1,123,68,4.87,5.16,0.93,Control,Stable,Primary,Current
+P0004,62,Male,27.9,134,83,3.62,3.84,1.33,Control,Improved,Secondary,Never
+P0005,52,Male,29.5,94,86,5.26,5.57,,Treatment A,Improved,Primary,Current
+P0006,75,Female,,142,93,7.19,6.34,3.16,Treatment B,Stable,Primary,Never
+P0007,62,Female,31.5,117,82,6.15,5.01,1.51,Treatment B,Stable,Secondary,Never
+P0008,73,Male,21.5,148,87,8.02,4.88,0.8,Treatment B,Stable,Primary,Never
+P0009,49,Male,15.0,120,75,5.81,5.51,1.44,Control,Stable,Primary,Never
+P0010,59,Female,22.8,127,73,8.54,2.87,2.49,Treatment A,Stable,Secondary,Never
+P0011,46,Female,26.6,159,83,5.81,5.69,0.64,Treatment B,Improved,Secondary,Never
+P0012,53,Male,25.1,124,74,5.63,8.51,0.44,Treatment B,Improved,Tertiary,Never
+P0013,55,Female,25.5,148,81,4.06,4.97,,Control,Stable,Secondary,Former
+P0014,49,Female,29.5,129,67,6.93,4.97,0.99,Treatment B,Stable,Secondary,Current
+P0015,43,Female,26.0,135,69,,5.92,,Control,Worsened,Primary,Former
+P0016,41,Male,27.5,129,84,4.82,6.91,,Control,Stable,Tertiary,Never
+P0017,30,Male,20.9,142,87,7.14,6.17,2.56,Treatment B,Stable,Primary,Current
+P0018,45,Male,20.3,117,68,6.99,2.73,6.81,Treatment B,Worsened,Primary,Never
+P0019,66,Female,30.6,112,85,6.96,5.72,2.62,Treatment B,Improved,Tertiary,Current
+P0020,39,Male,24.9,118,73,5.17,7.93,0.49,Treatment A,Stable,Secondary,Former
+P0021,42,Female,22.1,130,78,5.54,5.78,0.54,Treatment A,Stable,Secondary,Never
+P0022,79,Female,22.1,124,92,5.53,3.83,1.2,Treatment A,Stable,Primary,Never
+P0023,50,Female,,139,86,6.54,5.41,1.33,Treatment A,Improved,Primary,Current
+P0024,62,Male,21.8,149,86,7.46,3.69,0.42,Treatment A,Worsened,Secondary,Current
+P0025,66,Male,19.6,112,97,6.04,6.46,3.18,Control,Worsened,Secondary,Former
+P0026,66,Male,18.8,116,71,7.97,4.05,0.69,Treatment B,Improved,Secondary,Current
+P0027,40,Female,23.8,105,68,,5.18,5.44,Treatment A,Improved,Primary,Current
+P0028,55,Female,22.2,160,71,5.32,4.16,7.07,Treatment A,Improved,Primary,Never
+P0029,39,Male,28.7,133,75,,4.5,1.35,Treatment B,Stable,Secondary,Former
+P0030,87,Female,25.6,136,54,7.65,6.73,2.34,Treatment A,Stable,Secondary,Never
+P0031,39,Male,25.5,107,76,8.0,5.21,0.62,Treatment A,Improved,Primary,Never
+P0032,45,Male,21.7,128,73,7.02,4.48,2.72,Control,Worsened,Primary,Never
+P0033,46,Male,24.0,136,86,5.63,3.84,1.11,Control,Stable,Primary,Current
+P0034,40,Female,25.9,124,82,,3.04,0.69,Treatment A,Stable,Primary,Former
+P0035,74,Male,27.2,145,72,6.29,3.72,1.31,Treatment A,Stable,Secondary,Never
+P0036,87,Male,24.1,165,84,7.61,5.22,1.14,Treatment B,Stable,Primary,Never
+P0037,52,Female,28.6,113,85,6.12,6.18,1.27,Treatment B,Stable,Secondary,Never
+P0038,42,Female,24.5,112,70,6.15,4.48,3.52,Treatment B,Improved,Tertiary,Former
+P0039,31,Male,27.5,114,73,5.66,6.83,,Treatment A,Stable,Tertiary,Current
+P0040,55,Male,22.6,154,56,5.21,4.31,6.61,Control,Worsened,Tertiary,Never
+P0041,54,Female,17.6,145,67,5.41,4.84,0.57,Treatment B,Stable,Primary,Never
+P0042,50,Male,25.5,126,71,5.76,3.91,6.0,Treatment B,Worsened,Primary,Former
+P0043,61,Male,27.3,129,79,7.66,6.19,,Treatment A,Stable,Secondary,Never
+P0044,63,Female,26.7,115,69,5.31,7.41,1.65,Treatment B,Stable,Secondary,Former
+P0045,62,Male,26.1,142,73,5.66,3.16,1.11,Treatment B,Improved,Primary,Never
+P0046,54,Female,23.2,122,66,4.56,4.72,1.25,Treatment A,Stable,Secondary,Never
+P0047,45,Male,21.4,124,80,6.46,6.49,3.13,Control,Improved,Primary,Never
+P0048,66,Male,26.6,138,82,7.24,3.51,5.47,Control,Improved,Primary,Current
+P0049,58,Male,26.1,125,82,7.55,5.72,4.27,Treatment B,Improved,Secondary,Never
+P0050,69,Male,,124,78,5.84,6.44,1.19,Treatment A,Improved,Secondary,Never
+P0051,67,Male,28.7,128,63,,5.19,,Control,Worsened,Secondary,Former
+P0052,41,Male,,141,72,5.42,5.71,0.88,Control,Worsened,Tertiary,Current
+P0053,41,Female,22.3,154,74,6.23,7.04,0.75,Treatment B,Stable,Primary,Never
+P0054,49,Female,30.7,137,74,5.98,7.24,0.66,Control,Improved,Primary,Never
+P0055,45,Male,27.8,141,79,5.67,5.03,,Control,Worsened,Secondary,Former
+P0056,67,Female,23.1,125,92,5.77,4.51,,Treatment A,Stable,Secondary,Never
+P0057,62,Female,25.6,117,86,6.14,4.09,0.36,Treatment A,Improved,Secondary,Former
+P0058,71,Female,25.1,138,68,5.25,6.17,1.59,Treatment B,Stable,Primary,Never
+P0059,63,Male,15.0,131,85,5.31,3.59,5.54,Treatment B,Stable,Tertiary,Never
+P0060,61,Male,21.1,105,84,7.65,4.82,4.05,Treatment A,Improved,Secondary,Never
+P0061,72,Male,24.3,123,70,8.85,5.21,1.03,Control,Stable,Secondary,Former
+P0062,64,Male,23.1,127,86,4.15,4.55,0.54,Treatment B,Stable,Secondary,Never
+P0063,59,Male,25.4,120,76,4.09,5.41,,Treatment A,Improved,Tertiary,Never
+P0064,76,Female,28.8,152,64,4.45,7.92,0.26,Treatment B,Stable,Secondary,Never
+P0065,59,Female,23.3,136,83,5.48,4.97,4.01,Treatment A,Stable,Tertiary,Current
+P0066,54,Male,20.5,150,80,6.67,4.62,1.39,Control,Stable,Primary,Never
+P0067,48,Male,25.7,132,76,6.31,6.22,7.14,Treatment B,Worsened,Secondary,Former
+P0068,66,Male,23.3,129,78,5.81,5.36,0.41,Control,Worsened,Tertiary,Former
+P0069,73,Female,23.9,113,71,6.23,6.68,3.44,Treatment B,Stable,Secondary,Never
+P0070,57,Female,23.4,128,84,4.77,5.28,,Treatment B,Stable,Secondary,Current
+P0071,74,Male,33.0,128,78,5.31,4.83,1.27,Control,Stable,Tertiary,Current
+P0072,34,Female,16.0,106,80,5.58,3.14,0.55,Treatment B,Stable,Primary,Never
+P0073,57,Female,23.0,119,82,,3.32,2.66,Control,Improved,Secondary,Never
+P0074,58,Female,24.5,123,66,4.21,3.08,2.83,Treatment A,Stable,Tertiary,Never
+P0075,49,Female,,135,69,4.25,5.52,6.88,Treatment A,Stable,Tertiary,Never
+P0076,87,Female,27.9,135,56,6.52,3.6,3.69,Treatment A,Stable,Tertiary,Former
+P0077,57,Male,27.6,119,84,5.89,6.48,1.03,Treatment A,Worsened,Tertiary,Current
+P0078,53,Male,24.3,136,66,6.33,5.13,0.74,Treatment A,Stable,Primary,Current
+P0079,58,Female,23.5,125,79,3.39,4.83,0.55,Treatment A,Stable,Tertiary,Never
+P0080,34,Male,,85,82,3.82,4.17,5.36,Treatment B,Improved,Secondary,Never
+P0081,49,Female,24.1,120,84,6.4,5.78,,Control,Improved,Secondary,Never
+P0082,70,Male,24.2,145,66,3.0,4.22,,Treatment B,Stable,Secondary,Former
+P0083,50,Male,23.8,101,77,7.07,4.02,2.51,Control,Stable,Tertiary,Never
+P0084,48,Male,25.5,130,95,3.41,6.41,2.15,Control,Improved,Secondary,Current
+P0085,74,Female,,153,95,6.61,5.49,1.29,Treatment B,Improved,Tertiary,Current
+P0086,74,Male,19.8,116,88,4.53,4.84,,Control,Improved,Primary,Never
+P0087,64,Male,20.5,128,81,6.86,5.81,1.63,Treatment B,Stable,Primary,Former
+P0088,53,Male,17.9,107,68,9.45,5.11,,Control,Stable,Secondary,Former
+P0089,55,Female,27.8,154,85,3.0,5.52,2.88,Control,Stable,Primary,Current
+P0090,48,Female,25.5,127,76,6.43,4.2,1.47,Treatment B,Improved,Secondary,Never
+P0091,46,Male,26.4,129,84,3.43,7.38,0.87,Control,Improved,Primary,Never
+P0092,45,Female,19.1,150,72,6.11,4.46,2.66,Treatment B,Improved,Secondary,Former
+P0093,51,Male,31.3,139,76,5.35,6.81,1.57,Treatment A,Stable,Primary,Never
+P0094,46,Female,22.2,114,80,5.76,4.89,2.44,Treatment B,Improved,Primary,Former
+P0095,39,Male,25.1,118,80,,5.99,1.15,Treatment B,Improved,Secondary,Never
+P0096,61,Female,27.7,136,83,6.54,5.91,0.63,Control,Worsened,Secondary,Former
+P0097,61,Female,20.7,118,72,3.86,6.36,6.61,Control,Stable,Primary,Current
+P0098,78,Female,22.4,94,65,7.09,4.18,5.68,Treatment A,Worsened,Primary,Never
+P0099,50,Male,,127,94,5.11,6.28,3.34,Treatment B,Improved,Primary,Never
+P0100,62,Female,35.4,104,103,3.92,7.13,1.21,Control,Improved,Secondary,Former
+P0101,62,Female,25.6,154,82,7.51,4.82,1.3,Control,Worsened,Primary,Never
+P0102,55,Male,30.6,131,65,,5.14,4.98,Treatment A,Stable,Secondary,Former
+P0103,67,Female,29.1,114,70,7.89,4.52,1.24,Control,Stable,Secondary,Former
+P0104,67,Female,25.9,117,83,,4.72,0.99,Control,Worsened,Secondary,Never
+P0105,62,Male,20.7,98,91,4.64,6.98,,Control,Stable,Secondary,Current
+P0106,55,Female,28.5,110,66,5.5,4.0,1.59,Treatment B,Improved,Primary,Former
+P0107,54,Male,18.8,144,77,5.75,4.06,6.79,Treatment B,Stable,Tertiary,Former
+P0108,42,Female,30.6,164,80,7.43,6.87,0.54,Control,Improved,Secondary,Never
+P0109,48,Male,,140,87,6.13,5.79,2.5,Treatment A,Improved,Primary,Never
+P0110,51,Male,15.0,127,75,5.81,7.43,8.64,Treatment A,Improved,Tertiary,Never
+P0111,45,Female,23.2,121,62,5.36,4.6,1.69,Treatment A,Worsened,Secondary,Current
+P0112,63,Female,27.0,113,84,5.54,5.24,1.33,Treatment B,Stable,Secondary,Current
+P0113,72,Female,23.6,161,89,7.17,4.37,0.65,Treatment A,Improved,Tertiary,Current
+P0114,47,Female,27.2,125,77,,5.26,3.92,Treatment B,Improved,Primary,Never
+P0115,61,Male,21.3,162,82,5.13,3.15,0.89,Control,Stable,Tertiary,Former
+P0116,46,Male,19.5,150,73,4.92,5.85,1.53,Control,Worsened,Secondary,Current
+P0117,54,Male,24.2,100,70,4.94,5.46,0.61,Treatment A,Improved,Secondary,Former
+P0118,50,Male,24.6,117,88,,5.04,5.73,Treatment B,Improved,Primary,Never
+P0119,65,Female,23.2,117,82,4.7,4.67,,Treatment A,Worsened,Primary,Current
+P0120,50,Female,29.2,127,83,7.4,4.12,1.61,Treatment A,Worsened,Tertiary,Never
+P0121,70,Female,21.3,127,93,5.35,5.9,0.65,Control,Worsened,Primary,Never
+P0122,55,Male,25.7,176,67,6.45,3.81,5.63,Treatment A,Improved,Primary,Current
+P0123,50,Male,24.8,111,72,3.0,5.66,1.23,Treatment B,Improved,Secondary,Never
+P0124,43,Female,,132,80,6.28,7.38,0.68,Treatment A,Stable,Secondary,Never
+P0125,61,Male,19.5,138,72,5.41,6.73,0.4,Control,Improved,Primary,Former
+P0126,69,Male,,128,86,5.02,3.44,0.98,Treatment B,Worsened,Tertiary,Current
+P0127,61,Male,32.0,130,76,5.82,4.51,0.51,Treatment B,Improved,Secondary,Never
+P0128,85,Male,26.7,111,68,5.01,5.56,1.0,Treatment A,Stable,Tertiary,Current
+P0129,75,Male,17.9,130,79,3.05,5.02,2.99,Treatment A,Worsened,Primary,Never
+P0130,54,Female,15.0,136,80,,3.56,1.22,Treatment A,Worsened,Primary,Never
+P0131,54,Male,27.3,133,87,5.89,5.52,2.19,Treatment B,Stable,Secondary,Never
+P0132,64,Female,24.1,137,82,5.22,5.09,0.92,Treatment A,Worsened,Primary,Former
+P0133,48,Female,28.8,151,83,4.44,7.21,,Control,Improved,Secondary,Never
+P0134,72,Female,21.2,143,81,3.84,4.82,7.67,Control,Stable,Primary,Never
+P0135,62,Male,25.8,129,76,5.87,6.38,,Treatment B,Improved,Tertiary,Former
+P0136,61,Male,27.7,109,71,7.54,3.71,2.24,Treatment B,Worsened,Tertiary,Former
+P0137,66,Male,22.8,118,81,5.84,3.97,0.47,Treatment B,Worsened,Tertiary,Former
+P0138,79,Male,22.9,124,75,,5.89,5.56,Control,Improved,Tertiary,Current
+P0139,60,Male,24.6,132,95,5.87,6.29,1.13,Control,Improved,Tertiary,Never
+P0140,57,Female,26.6,120,91,5.54,4.05,,Treatment A,Stable,Secondary,Never
+P0141,76,Male,24.4,113,84,6.64,5.13,1.49,Control,Improved,Secondary,Never
+P0142,70,Male,28.2,109,82,,3.58,2.69,Treatment A,Worsened,Tertiary,Former
+P0143,54,Male,22.7,102,77,3.0,4.9,2.82,Treatment A,Improved,Tertiary,Never
+P0144,58,Female,19.5,124,65,6.25,6.02,1.15,Control,Stable,Tertiary,Never
+P0145,60,Female,32.0,104,76,4.4,4.62,3.95,Control,Stable,Tertiary,Never
+P0146,62,Female,22.2,112,79,3.89,4.83,0.9,Treatment A,Stable,Primary,Never
+P0147,42,Female,22.3,122,80,,3.86,3.07,Treatment B,Improved,Tertiary,Current
+P0148,39,Female,24.2,107,83,6.09,4.39,1.21,Treatment A,Worsened,Tertiary,Former
+P0149,47,Female,,134,87,3.63,7.03,2.18,Control,Stable,Secondary,Never
+P0150,46,Male,23.0,140,71,6.45,5.18,1.14,Control,Stable,Tertiary,Former
+P0151,50,Female,24.4,119,71,6.52,4.0,1.72,Treatment A,Stable,Secondary,Former
+P0152,66,Female,24.3,121,93,5.66,4.75,0.7,Control,Worsened,Tertiary,Never
+P0153,56,Male,25.2,137,86,4.56,3.34,2.01,Treatment B,Worsened,Primary,Never
+P0154,60,Female,15.5,117,74,4.42,3.98,1.71,Treatment B,Worsened,Tertiary,Former
+P0155,43,Female,31.6,115,77,6.83,6.6,1.07,Control,Stable,Primary,Never
+P0156,52,Female,23.9,147,77,3.79,4.94,1.58,Treatment B,Worsened,Secondary,Former
+P0157,65,Male,26.7,142,78,6.88,7.18,1.84,Control,Improved,Primary,Former
+P0158,65,Female,19.3,138,83,,5.0,1.01,Treatment A,Stable,Secondary,Current
+P0159,49,Female,22.7,143,103,5.48,5.06,1.49,Treatment B,Stable,Primary,Current
+P0160,60,Male,21.9,96,80,3.55,5.8,0.74,Control,Stable,Tertiary,Current
+P0161,84,Male,30.1,150,85,5.42,2.5,,Control,Worsened,Secondary,Former
+P0162,58,Male,22.3,134,61,,5.33,3.85,Control,Worsened,Tertiary,Never
+P0163,50,Male,27.4,144,73,4.0,5.05,2.05,Treatment B,Stable,Primary,Former
+P0164,56,Female,22.0,134,90,6.2,6.73,,Control,Stable,Primary,Current
+P0165,59,Female,22.8,129,82,5.71,6.16,0.34,Treatment A,Worsened,Tertiary,Current
+P0166,56,Male,,124,50,4.83,3.85,0.21,Treatment A,Worsened,Secondary,Current
+P0167,58,Male,29.4,134,85,6.63,6.47,1.2,Treatment B,Stable,Secondary,Never
+P0168,41,Female,17.3,123,97,3.0,4.81,0.55,Treatment B,Improved,Tertiary,Former
+P0169,46,Male,19.5,142,58,6.02,4.11,1.36,Treatment B,Improved,Tertiary,Current
+P0170,56,Female,17.1,103,93,7.54,5.32,1.94,Treatment B,Worsened,Secondary,Former
+P0171,56,Male,20.4,119,50,7.33,4.88,3.44,Treatment A,Stable,Tertiary,Former
+P0172,51,Male,21.4,161,87,6.07,6.79,0.66,Treatment A,Stable,Secondary,Former
+P0173,56,Female,18.4,118,78,5.24,5.47,2.27,Control,Stable,Secondary,Former
+P0174,59,Male,21.7,124,55,4.84,5.33,1.67,Treatment B,Stable,Secondary,Never
+P0175,69,Female,16.8,114,82,,6.09,,Treatment A,Stable,Primary,Never
+P0176,57,Male,20.6,133,90,6.25,6.3,1.09,Treatment A,Worsened,Primary,Current
+P0177,63,Female,29.1,116,82,4.63,5.96,4.99,Control,Improved,Tertiary,Current
+P0178,52,Female,26.0,125,84,6.51,6.66,1.52,Control,Stable,Secondary,Current
+P0179,65,Female,25.2,142,74,8.16,5.77,6.82,Treatment A,Stable,Secondary,Never
+P0180,63,Male,20.7,117,59,5.53,5.28,0.88,Treatment A,Worsened,Secondary,Never
+P0181,68,Female,18.7,141,85,,6.46,2.99,Treatment A,Improved,Primary,Never
+P0182,67,Female,20.2,141,95,3.99,5.0,,Control,Stable,Primary,Current
+P0183,65,Male,24.3,145,89,6.53,5.14,1.27,Control,Improved,Tertiary,Former
+P0184,57,Male,,130,58,5.53,6.99,2.73,Treatment B,Improved,Secondary,Current
+P0185,61,Female,27.9,180,63,6.65,6.88,1.3,Treatment A,Stable,Primary,Never
+P0186,71,Male,26.9,145,70,4.96,5.09,,Treatment A,Improved,Secondary,Former
+P0187,50,Female,21.7,133,62,,4.6,0.14,Control,Worsened,Secondary,Current
+P0188,50,Female,24.6,114,78,5.41,6.71,4.56,Treatment A,Worsened,Secondary,Never
+P0189,60,Male,23.3,126,82,,5.98,4.41,Treatment A,Improved,Tertiary,Current
+P0190,63,Female,23.7,151,64,,5.45,7.46,Treatment A,Worsened,Secondary,Former
+P0191,48,Female,32.2,155,86,4.16,4.75,,Treatment B,Stable,Secondary,Never
+P0192,57,Male,17.8,152,84,7.99,5.46,0.59,Treatment B,Stable,Secondary,Never
+P0193,57,Female,23.6,141,73,5.48,5.08,1.18,Control,Worsened,Secondary,Current
+P0194,31,Male,29.1,108,76,6.37,4.37,1.66,Treatment A,Stable,Secondary,Former
+P0195,55,Male,18.9,136,59,4.96,5.24,0.74,Treatment B,Improved,Primary,Current
+P0196,56,Female,22.1,108,75,4.34,5.39,6.16,Treatment A,Improved,Tertiary,Current
+P0197,56,Male,22.5,104,78,5.32,4.69,9.89,Control,Stable,Secondary,Never
+P0198,75,Female,,132,80,6.92,6.09,2.42,Control,Worsened,Secondary,Current
+P0199,43,Male,18.4,136,82,4.98,6.52,1.63,Treatment B,Stable,Primary,Current
+P0200,48,Female,26.8,142,80,4.56,6.17,0.59,Treatment B,Stable,Tertiary,Never
+P0201,27,Male,27.0,136,75,5.79,4.8,,Control,Improved,Primary,Current
+P0202,52,Female,26.4,137,81,6.2,5.93,1.75,Treatment A,Worsened,Secondary,Never
+P0203,53,Female,21.2,112,88,7.57,5.19,1.31,Treatment A,Improved,Tertiary,Never
+P0204,52,Female,24.8,126,77,6.02,3.74,2.42,Control,Stable,Secondary,Never
+P0205,71,Female,21.1,104,81,6.37,5.84,1.03,Treatment A,Stable,Tertiary,Current
+P0206,68,Female,23.2,96,76,6.46,5.26,,Treatment B,Improved,Primary,Never
+P0207,59,Female,32.7,140,72,4.22,7.95,0.52,Control,Improved,Secondary,Never
+P0208,54,Female,24.9,116,83,4.44,6.7,3.93,Control,Stable,Tertiary,Former
+P0209,70,Female,20.0,142,72,4.3,5.88,1.52,Treatment A,Improved,Secondary,Never
+P0210,58,Female,25.2,146,82,4.0,5.37,,Control,Stable,Secondary,Current
+P0211,48,Female,19.4,118,78,6.55,5.28,1.4,Treatment B,Worsened,Secondary,Current
+P0212,37,Male,19.9,137,75,5.95,4.0,1.48,Treatment A,Improved,Tertiary,Never
+P0213,53,Female,20.5,117,75,5.7,3.19,0.63,Control,Stable,Tertiary,Never
+P0214,67,Female,22.8,98,73,3.0,4.14,3.03,Treatment A,Improved,Secondary,Current
+P0215,85,Male,28.1,130,62,8.07,5.05,0.82,Treatment B,Improved,Tertiary,Never
+P0216,59,Male,26.7,120,82,4.53,2.78,,Treatment A,Stable,Secondary,Never
+P0217,49,Female,26.5,121,80,8.06,4.5,1.65,Treatment A,Stable,Secondary,Current
+P0218,44,Male,20.3,160,86,3.86,4.83,1.82,Control,Stable,Secondary,Current
+P0219,65,Male,22.4,104,73,4.63,4.86,0.42,Control,Improved,Secondary,Former
+P0220,37,Male,25.5,134,97,3.0,4.37,1.37,Control,Stable,Tertiary,Former
+P0221,65,Male,22.1,112,74,6.03,4.72,3.11,Control,Stable,Secondary,Current
+P0222,68,Female,23.4,143,69,4.28,7.0,1.22,Control,Worsened,Primary,Former
+P0223,63,Female,26.2,133,68,4.31,5.83,,Treatment A,Stable,Secondary,Former
+P0224,55,Female,23.2,134,61,3.95,4.48,1.88,Control,Worsened,Tertiary,Current
+P0225,65,Female,25.4,113,93,6.53,5.02,1.49,Treatment A,Improved,Tertiary,Former
+P0226,60,Female,30.6,116,92,6.45,5.07,0.72,Treatment B,Stable,Primary,Former
+P0227,49,Male,23.8,143,84,7.77,4.26,1.6,Treatment B,Stable,Primary,Never
+P0228,80,Female,29.0,156,69,4.78,4.25,,Treatment A,Stable,Secondary,Former
+P0229,54,Male,26.6,136,96,5.86,6.21,0.71,Control,Stable,Primary,Former
+P0230,67,Male,18.9,114,74,4.05,4.64,1.22,Treatment A,Stable,Tertiary,Never
+P0231,29,Female,20.3,133,75,5.2,3.9,0.55,Treatment B,Worsened,Secondary,Never
+P0232,73,Female,21.3,167,92,,5.05,3.5,Treatment A,Improved,Secondary,Current
+P0233,76,Male,21.3,130,85,6.16,5.23,1.53,Treatment B,Worsened,Primary,Never
+P0234,58,Female,24.2,151,100,6.82,2.93,0.84,Treatment B,Stable,Secondary,Never
+P0235,65,Male,26.8,116,80,6.79,5.06,1.78,Control,Stable,Tertiary,Never
+P0236,65,Male,29.3,127,74,4.59,6.05,0.63,Control,Stable,Secondary,Never
+P0237,50,Male,25.7,138,72,6.8,5.6,0.72,Control,Improved,Primary,Current
+P0238,65,Male,22.8,134,60,5.55,7.55,0.51,Control,Worsened,Primary,Never
+P0239,48,Female,16.6,116,75,,6.48,,Control,Worsened,Tertiary,Never
+P0240,51,Male,24.8,115,89,4.75,6.69,4.88,Treatment A,Worsened,Tertiary,Current
+P0241,72,Female,24.6,144,84,4.93,8.18,0.92,Treatment A,Worsened,Primary,Never
+P0242,70,Male,25.2,147,78,7.69,5.93,2.39,Treatment A,Stable,Secondary,Never
+P0243,50,Female,32.5,152,68,5.97,5.28,0.84,Treatment B,Stable,Primary,Current
+P0244,49,Female,29.2,157,80,5.81,6.17,3.03,Treatment B,Worsened,Secondary,Former
+P0245,50,Female,27.5,130,88,5.29,4.48,0.73,Treatment B,Improved,Primary,Current
+P0246,67,Male,20.8,123,82,8.54,5.22,,Treatment B,Worsened,Tertiary,Current
+P0247,46,Female,22.6,150,80,7.17,4.39,1.72,Treatment A,Stable,Tertiary,Current
+P0248,62,Female,24.1,139,70,4.73,5.54,10.61,Treatment B,Stable,Primary,Never
+P0249,67,Male,21.6,112,87,5.27,4.38,2.73,Treatment A,Stable,Secondary,Current
+P0250,57,Male,,111,50,5.34,4.34,1.03,Control,Stable,Primary,Former
+P0251,70,Male,25.9,136,82,,5.55,2.85,Control,Improved,Secondary,Never
+P0252,54,Male,20.4,125,104,4.76,4.95,9.12,Control,Stable,Primary,Current
+P0253,55,Male,29.0,128,63,6.13,2.98,0.45,Treatment B,Stable,Primary,Never
+P0254,46,Male,24.9,145,76,7.34,3.5,0.84,Control,Improved,Tertiary,Current
+P0255,70,Male,17.9,140,78,4.02,3.84,1.36,Treatment B,Improved,Primary,Former
+P0256,49,Female,24.3,149,73,4.25,4.13,1.18,Treatment B,Stable,Tertiary,Former
+P0257,62,Male,25.6,97,88,5.02,5.56,1.26,Treatment A,Improved,Primary,Never
+P0258,57,Male,,132,83,5.08,5.34,0.58,Treatment B,Worsened,Secondary,Current
+P0259,45,Female,23.2,139,80,8.0,6.27,5.07,Treatment B,Improved,Secondary,Former
+P0260,51,Male,27.6,104,86,6.8,5.93,0.53,Treatment B,Stable,Tertiary,Never
+P0261,75,Male,25.2,118,78,6.73,6.28,1.4,Treatment A,Improved,Primary,Never
+P0262,60,Male,19.5,115,110,5.28,5.77,3.81,Control,Stable,Primary,Current
+P0263,46,Male,19.1,128,80,5.26,5.33,1.61,Control,Stable,Secondary,Never
+P0264,62,Male,28.8,154,80,3.86,6.31,0.75,Treatment B,Stable,Secondary,Former
+P0265,56,Male,29.0,160,61,6.54,6.11,0.56,Treatment B,Stable,Secondary,Former
+P0266,90,Male,25.7,115,73,,5.51,1.37,Treatment A,Stable,Primary,Never
+P0267,61,Female,30.2,136,89,7.14,6.5,0.9,Control,Improved,Primary,Former
+P0268,53,Female,28.5,137,65,5.35,2.52,1.94,Treatment B,Stable,Tertiary,Never
+P0269,75,Male,27.1,134,56,5.43,4.78,0.54,Control,Stable,Secondary,Current
+P0270,36,Male,,134,78,5.8,4.76,,Treatment A,Stable,Secondary,Current
+P0271,59,Male,31.1,133,92,6.67,6.37,1.81,Treatment A,Stable,Primary,Never
+P0272,82,Female,26.5,155,78,3.84,6.83,1.92,Control,Stable,Primary,Former
+P0273,57,Female,23.0,146,75,6.48,3.5,5.22,Control,Stable,Tertiary,Former
+P0274,37,Male,22.0,111,59,5.58,6.65,1.16,Control,Improved,Secondary,Current
+P0275,53,Male,25.5,141,83,4.33,3.81,0.92,Treatment B,Improved,Primary,Never
+P0276,75,Male,18.1,142,85,3.1,3.84,1.06,Treatment B,Improved,Tertiary,Former
+P0277,63,Female,27.2,133,60,5.44,4.84,1.41,Treatment A,Stable,Secondary,Current
+P0278,48,Female,20.9,146,89,7.34,4.75,1.53,Treatment A,Worsened,Secondary,Never
+P0279,50,Male,25.9,131,86,7.61,3.39,0.85,Treatment A,Stable,Secondary,Former
+P0280,51,Female,22.5,131,89,6.03,5.81,0.33,Treatment A,Stable,Secondary,Never
+P0281,62,Male,23.5,130,84,7.95,5.85,1.05,Treatment A,Improved,Secondary,Former
+P0282,74,Female,21.6,96,85,5.55,6.26,2.2,Treatment A,Worsened,Secondary,Never
+P0283,71,Female,23.9,127,83,6.74,4.62,1.84,Treatment A,Improved,Secondary,Current
+P0284,63,Male,31.7,117,87,5.06,5.06,4.3,Treatment A,Stable,Primary,Never
+P0285,42,Male,29.8,109,60,4.98,5.07,7.88,Treatment A,Worsened,Tertiary,Never
+P0286,42,Female,25.8,151,63,4.79,6.96,3.03,Treatment B,Stable,Secondary,Current
+P0287,64,Male,24.4,136,71,3.13,2.5,4.98,Control,Improved,Secondary,Current
+P0288,42,Female,27.7,128,77,7.14,4.05,,Control,Improved,Secondary,Former
+P0289,55,Male,28.8,119,82,4.83,5.11,6.47,Treatment A,Stable,Secondary,Former
+P0290,62,Female,21.3,133,81,4.64,3.91,7.25,Control,Improved,Secondary,Never
+P0291,44,Male,24.2,144,89,4.18,4.82,3.53,Control,Stable,Secondary,Former
+P0292,46,Male,17.6,115,89,5.35,4.96,,Treatment B,Stable,Tertiary,Never
+P0293,57,Male,28.8,128,69,7.72,4.38,1.4,Treatment A,Improved,Tertiary,Never
+P0294,64,Male,32.3,142,80,8.11,5.17,1.6,Treatment A,Improved,Tertiary,Current
+P0295,71,Male,24.8,97,70,3.61,5.79,1.26,Treatment B,Worsened,Primary,Former
+P0296,65,Female,16.4,127,76,5.17,4.84,2.71,Control,Stable,Secondary,Never
+P0297,59,Male,26.8,121,81,4.36,4.6,0.93,Treatment A,Stable,Secondary,Never
+P0298,49,Male,21.1,126,50,6.79,4.92,1.41,Control,Stable,Primary,Current
+P0299,45,Male,22.0,120,102,5.94,5.09,0.25,Treatment A,Improved,Tertiary,Never
+P0300,52,Male,26.9,130,84,4.84,3.19,6.54,Control,Stable,Secondary,Never
+P0301,63,Female,25.5,159,72,5.69,5.61,1.38,Treatment B,Stable,Primary,Never
+P0302,62,Female,22.6,123,97,5.03,4.6,2.37,Control,Stable,Primary,Never
+P0303,33,Male,22.0,133,75,7.54,6.49,5.29,Control,Worsened,Primary,Never
+P0304,49,Female,25.0,160,79,6.26,5.75,2.1,Control,Worsened,Secondary,Current
+P0305,72,Female,22.9,119,73,6.4,6.39,5.24,Control,Stable,Secondary,Never
+P0306,59,Female,20.3,157,95,3.0,3.99,0.61,Control,Stable,Secondary,Former
+P0307,41,Male,23.2,128,77,5.52,4.69,11.22,Control,Stable,Primary,Former
+P0308,86,Male,25.8,157,79,8.1,3.73,3.93,Treatment B,Stable,Primary,Former
+P0309,58,Male,23.8,140,90,7.19,4.32,1.95,Treatment B,Improved,Tertiary,Former
+P0310,63,Female,19.1,133,84,3.38,6.48,5.16,Treatment B,Worsened,Primary,Former
+P0311,63,Female,28.3,127,77,5.22,6.74,0.65,Treatment B,Worsened,Secondary,Former
+P0312,54,Male,15.0,118,89,4.16,3.84,1.31,Treatment B,Improved,Secondary,Former
+P0313,49,Male,22.8,129,103,7.65,4.6,5.24,Treatment A,Worsened,Secondary,Current
+P0314,83,Female,22.1,142,81,5.89,5.02,0.37,Treatment A,Worsened,Tertiary,Former
+P0315,70,Female,25.1,128,79,4.68,5.74,2.58,Treatment A,Stable,Secondary,Current
+P0316,68,Male,26.6,123,80,5.64,3.16,2.52,Control,Worsened,Tertiary,Never
+P0317,65,Female,28.8,124,91,3.0,3.34,7.97,Treatment A,Improved,Tertiary,Former
+P0318,46,Male,21.8,144,72,4.3,5.64,0.46,Treatment B,Improved,Primary,Former
+P0319,73,Male,26.7,148,75,5.64,2.96,5.98,Control,Improved,Primary,Never
+P0320,48,Female,25.2,117,63,6.61,4.61,1.05,Treatment B,Stable,Secondary,Current
+P0321,61,Female,18.0,117,66,3.27,5.28,1.15,Treatment B,Stable,Secondary,Never
+P0322,38,Female,31.7,134,73,5.14,5.56,0.62,Treatment A,Worsened,Secondary,Never
+P0323,34,Male,19.0,152,77,,4.94,0.69,Treatment A,Improved,Primary,Current
+P0324,62,Male,26.1,146,96,3.86,4.7,2.28,Control,Improved,Primary,Never
+P0325,48,Male,26.0,108,83,5.88,6.03,0.68,Control,Stable,Secondary,Never
+P0326,34,Male,25.5,124,69,5.68,5.41,2.98,Control,Improved,Secondary,Never
+P0327,64,Male,22.6,113,71,7.66,4.39,0.97,Treatment B,Stable,Secondary,Current
+P0328,83,Male,27.6,124,92,5.32,5.14,0.62,Treatment A,Stable,Tertiary,Never
+P0329,75,Male,18.6,154,89,5.39,5.52,1.08,Control,Worsened,Primary,Former
+P0330,55,Male,24.2,105,78,6.63,6.99,2.16,Treatment A,Stable,Secondary,Current
+P0331,58,Male,22.4,102,74,4.01,5.96,1.32,Treatment B,Improved,Tertiary,Former
+P0332,69,Female,21.9,115,89,5.33,6.44,1.69,Control,Improved,Secondary,Current
+P0333,71,Male,26.1,133,68,5.05,4.43,2.88,Control,Improved,Secondary,Current
+P0334,54,Female,28.6,138,82,5.43,4.52,3.92,Treatment B,Worsened,Secondary,Never
+P0335,58,Female,23.2,135,101,6.62,4.84,1.29,Treatment B,Stable,Primary,Current
+P0336,62,Female,27.5,147,80,6.26,4.94,0.72,Treatment A,Stable,Tertiary,Former
+P0337,65,Male,24.7,100,70,4.7,3.99,1.75,Treatment B,Improved,Secondary,Never
+P0338,56,Male,21.1,147,82,5.76,6.49,2.4,Treatment A,Worsened,Secondary,Never
+P0339,57,Female,23.5,123,73,7.39,6.07,0.51,Treatment A,Improved,Secondary,Former
+P0340,75,Female,23.4,140,64,4.6,4.76,0.81,Control,Stable,Secondary,Never
+P0341,73,Male,21.9,107,85,5.77,5.81,0.93,Treatment B,Stable,Primary,Former
+P0342,64,Male,26.1,128,89,5.37,5.35,1.4,Treatment B,Improved,Tertiary,Never
+P0343,79,Female,25.4,132,75,5.52,5.89,0.9,Control,Stable,Secondary,Former
+P0344,53,Male,18.5,146,74,3.64,3.62,2.9,Treatment B,Improved,Primary,Never
+P0345,77,Female,18.2,103,68,7.29,4.94,0.46,Treatment B,Stable,Secondary,Current
+P0346,65,Male,26.1,128,77,,5.04,0.47,Control,Worsened,Tertiary,Never
+P0347,90,Male,21.4,111,72,6.83,5.79,1.26,Control,Stable,Secondary,Never
+P0348,44,Female,25.6,136,68,4.85,4.41,1.43,Treatment A,Worsened,Secondary,Never
+P0349,50,Male,27.5,140,97,,2.5,0.51,Treatment A,Stable,Secondary,Never
+P0350,63,Female,19.7,149,83,7.06,3.91,1.01,Treatment A,Improved,Tertiary,Former
+P0351,63,Male,19.1,119,84,6.79,5.03,1.2,Treatment A,Stable,Secondary,Former
+P0352,81,Male,30.9,143,87,5.85,5.17,1.2,Treatment B,Stable,Tertiary,Never
+P0353,50,Female,25.8,150,86,6.51,6.95,1.86,Treatment A,Improved,Primary,Current
+P0354,69,Male,22.9,102,74,5.25,5.74,0.97,Control,Stable,Tertiary,Never
+P0355,72,Male,21.0,138,81,5.59,5.19,5.38,Control,Stable,Tertiary,Never
+P0356,66,Female,22.6,143,75,4.81,5.06,2.44,Treatment B,Stable,Secondary,Current
+P0357,46,Female,20.0,124,82,6.68,6.31,0.86,Treatment B,Improved,Secondary,Former
+P0358,75,Female,27.9,109,81,4.77,4.45,1.78,Treatment A,Worsened,Primary,Former
+P0359,73,Male,21.5,143,74,7.38,4.95,1.82,Control,Stable,Secondary,Never
+P0360,65,Male,28.7,109,65,5.22,3.9,4.36,Control,Improved,Primary,Never
+P0361,60,Female,23.0,125,79,5.62,6.66,1.02,Control,Improved,Primary,Former
+P0362,61,Male,20.5,127,76,6.51,5.53,3.05,Control,Worsened,Tertiary,Never
+P0363,57,Male,22.9,139,59,5.63,4.32,1.7,Treatment A,Stable,Primary,Never
+P0364,66,Female,15.0,118,83,5.24,4.97,5.44,Control,Stable,Secondary,Current
+P0365,58,Male,24.0,117,88,5.56,5.66,4.63,Control,Improved,Secondary,Former
+P0366,48,Male,23.9,130,103,6.67,4.82,1.93,Control,Stable,Secondary,Never
+P0367,45,Male,27.6,144,74,4.8,4.51,1.34,Treatment B,Stable,Secondary,Never
+P0368,49,Male,17.3,165,73,5.45,4.38,2.47,Treatment A,Improved,Secondary,Former
+P0369,61,Female,28.9,104,67,5.61,5.47,1.43,Control,Worsened,Secondary,Never
+P0370,58,Female,27.6,133,80,6.64,4.71,6.32,Treatment B,Improved,Tertiary,Never
+P0371,61,Male,29.3,111,80,5.48,4.6,1.76,Treatment A,Improved,Secondary,Never
+P0372,64,Male,24.3,144,70,7.77,3.63,1.19,Control,Stable,Tertiary,Former
+P0373,50,Female,28.4,113,76,,5.19,1.14,Treatment B,Stable,Secondary,Former
+P0374,76,Male,18.9,117,58,5.31,4.9,0.62,Treatment B,Improved,Secondary,Never
+P0375,55,Female,27.2,119,87,5.39,4.75,2.57,Treatment A,Stable,Primary,Never
+P0376,53,Female,21.6,127,70,4.02,5.32,0.86,Control,Improved,Primary,Former
+P0377,64,Female,18.2,133,78,4.36,5.92,3.97,Control,Stable,Tertiary,Former
+P0378,36,Male,20.2,136,64,4.96,5.87,0.59,Treatment A,Stable,Secondary,Former
+P0379,49,Female,,128,72,6.96,5.71,1.83,Treatment B,Worsened,Secondary,Never
+P0380,70,Male,21.4,107,75,5.56,4.84,4.14,Treatment B,Stable,Tertiary,Former
+P0381,37,Female,,140,78,5.02,4.48,0.29,Treatment B,Stable,Secondary,Current
+P0382,71,Female,17.6,127,83,7.07,3.95,8.29,Treatment B,Stable,Tertiary,Former
+P0383,76,Female,16.4,147,92,7.46,4.45,1.17,Treatment A,Improved,Secondary,Never
+P0384,54,Female,29.7,117,85,7.11,5.12,1.85,Treatment A,Improved,Tertiary,Former
+P0385,62,Female,27.9,102,88,4.58,4.24,2.6,Treatment B,Worsened,Primary,Never
+P0386,71,Male,20.5,127,92,5.01,5.21,2.95,Treatment B,Improved,Primary,Never
+P0387,52,Male,24.5,149,84,7.78,4.04,,Treatment A,Stable,Secondary,Never
+P0388,68,Female,28.4,131,78,5.89,3.27,3.66,Control,Improved,Primary,Current
+P0389,50,Female,26.1,125,88,,6.0,2.5,Treatment B,Worsened,Tertiary,Never
+P0390,52,Male,25.1,114,89,,4.58,6.74,Control,Improved,Secondary,Current
+P0391,48,Female,28.7,156,84,6.81,4.18,2.5,Treatment A,Worsened,Primary,Former
+P0392,62,Female,21.7,112,63,4.91,3.9,7.94,Treatment A,Stable,Primary,Former
+P0393,72,Male,24.6,116,70,5.86,5.57,3.39,Treatment B,Improved,Tertiary,Never
+P0394,56,Male,24.4,137,75,6.71,6.61,0.39,Control,Stable,Secondary,Former
+P0395,43,Male,23.5,98,86,4.21,4.66,13.31,Treatment A,Stable,Tertiary,Never
+P0396,45,Male,23.0,148,78,5.61,4.86,1.04,Treatment A,Improved,Primary,Never
+P0397,63,Male,24.8,138,89,4.26,6.28,,Control,Improved,Tertiary,Never
+P0398,80,Male,24.6,142,91,4.42,3.11,1.68,Control,Stable,Secondary,Never
+P0399,63,Male,20.5,137,90,4.92,7.26,,Treatment A,Stable,Secondary,Former
+P0400,53,Male,27.5,125,90,6.17,7.79,0.95,Treatment B,Improved,Secondary,Never

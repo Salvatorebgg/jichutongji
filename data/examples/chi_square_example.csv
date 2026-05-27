@@ -1,0 +1,301 @@
+﻿patient_id,treatment,outcome,age,sex
+P0001,Drug X,Effective,54,Female
+P0002,Drug X,Ineffective,49,Female
+P0003,Drug X,Effective,82,Male
+P0004,Drug Y,Ineffective,50,Male
+P0005,Standard,Ineffective,47,Male
+P0006,Drug Y,Effective,60,Male
+P0007,Drug Y,Effective,58,Female
+P0008,Drug X,Effective,38,Male
+P0009,Standard,Ineffective,68,Female
+P0010,Drug Y,Effective,54,Female
+P0011,Standard,Ineffective,42,Female
+P0012,Standard,Ineffective,69,Male
+P0013,Drug X,Effective,63,Male
+P0014,Drug X,Effective,40,Female
+P0015,Drug X,Effective,76,Female
+P0016,Drug Y,Ineffective,63,Male
+P0017,Standard,Ineffective,55,Male
+P0018,Drug Y,Ineffective,74,Female
+P0019,Standard,Effective,57,Female
+P0020,Drug Y,Effective,55,Male
+P0021,Drug X,Effective,47,Male
+P0022,Drug X,Effective,62,Female
+P0023,Drug Y,Effective,61,Female
+P0024,Drug Y,Effective,55,Female
+P0025,Drug Y,Ineffective,46,Male
+P0026,Drug X,Effective,57,Male
+P0027,Standard,Effective,54,Female
+P0028,Drug X,Ineffective,39,Female
+P0029,Standard,Ineffective,37,Female
+P0030,Drug X,Ineffective,62,Male
+P0031,Drug X,Effective,24,Male
+P0032,Drug Y,Ineffective,57,Male
+P0033,Drug Y,Ineffective,49,Male
+P0034,Drug Y,Effective,71,Female
+P0035,Drug Y,Ineffective,49,Male
+P0036,Standard,Ineffective,63,Female
+P0037,Drug Y,Effective,50,Female
+P0038,Drug Y,Effective,56,Female
+P0039,Drug Y,Effective,64,Female
+P0040,Drug X,Ineffective,49,Male
+P0041,Drug Y,Effective,67,Female
+P0042,Drug X,Effective,43,Male
+P0043,Drug Y,Effective,59,Male
+P0044,Drug X,Ineffective,66,Male
+P0045,Standard,Effective,63,Male
+P0046,Drug Y,Ineffective,78,Female
+P0047,Standard,Ineffective,46,Male
+P0048,Drug Y,Effective,38,Male
+P0049,Drug X,Ineffective,43,Male
+P0050,Standard,Effective,63,Male
+P0051,Drug Y,Effective,61,Female
+P0052,Standard,Ineffective,56,Male
+P0053,Drug Y,Ineffective,42,Female
+P0054,Drug Y,Effective,64,Male
+P0055,Standard,Ineffective,40,Female
+P0056,Drug Y,Effective,69,Male
+P0057,Drug X,Effective,89,Male
+P0058,Drug Y,Ineffective,59,Male
+P0059,Drug Y,Ineffective,62,Female
+P0060,Standard,Ineffective,49,Female
+P0061,Drug Y,Effective,33,Male
+P0062,Drug Y,Ineffective,48,Female
+P0063,Standard,Ineffective,42,Female
+P0064,Drug Y,Ineffective,38,Male
+P0065,Standard,Effective,76,Male
+P0066,Drug Y,Effective,58,Female
+P0067,Drug X,Effective,60,Female
+P0068,Standard,Effective,51,Female
+P0069,Drug X,Effective,53,Male
+P0070,Drug X,Effective,67,Male
+P0071,Drug Y,Ineffective,55,Male
+P0072,Standard,Effective,61,Male
+P0073,Standard,Ineffective,53,Female
+P0074,Drug X,Effective,51,Male
+P0075,Drug X,Ineffective,38,Male
+P0076,Standard,Ineffective,31,Male
+P0077,Drug X,Effective,52,Male
+P0078,Drug X,Effective,56,Female
+P0079,Drug X,Ineffective,40,Male
+P0080,Drug Y,Effective,55,Female
+P0081,Standard,Ineffective,56,Male
+P0082,Standard,Ineffective,29,Male
+P0083,Standard,Ineffective,44,Male
+P0084,Drug X,Effective,60,Female
+P0085,Drug Y,Effective,60,Male
+P0086,Drug Y,Effective,41,Male
+P0087,Drug X,Ineffective,57,Female
+P0088,Drug X,Effective,67,Female
+P0089,Drug X,Effective,64,Male
+P0090,Drug X,Ineffective,54,Female
+P0091,Drug Y,Effective,49,Female
+P0092,Standard,Effective,47,Male
+P0093,Drug X,Effective,61,Female
+P0094,Drug Y,Effective,57,Male
+P0095,Standard,Effective,63,Male
+P0096,Standard,Ineffective,57,Female
+P0097,Standard,Ineffective,65,Male
+P0098,Drug Y,Ineffective,56,Female
+P0099,Standard,Effective,64,Female
+P0100,Drug X,Effective,65,Male
+P0101,Drug Y,Effective,45,Male
+P0102,Drug X,Ineffective,33,Male
+P0103,Drug Y,Effective,74,Female
+P0104,Drug Y,Ineffective,58,Male
+P0105,Drug X,Effective,34,Male
+P0106,Standard,Ineffective,46,Female
+P0107,Drug X,Effective,64,Female
+P0108,Drug X,Ineffective,52,Female
+P0109,Drug X,Effective,49,Male
+P0110,Drug Y,Ineffective,72,Female
+P0111,Drug X,Effective,42,Female
+P0112,Drug Y,Ineffective,45,Female
+P0113,Drug X,Ineffective,58,Male
+P0114,Standard,Ineffective,60,Female
+P0115,Standard,Effective,61,Male
+P0116,Drug Y,Effective,66,Female
+P0117,Drug Y,Effective,57,Male
+P0118,Standard,Effective,61,Male
+P0119,Standard,Ineffective,52,Female
+P0120,Drug Y,Ineffective,56,Female
+P0121,Standard,Ineffective,56,Female
+P0122,Standard,Ineffective,58,Male
+P0123,Standard,Ineffective,64,Female
+P0124,Drug Y,Ineffective,62,Male
+P0125,Drug X,Ineffective,56,Female
+P0126,Drug X,Effective,45,Female
+P0127,Drug Y,Effective,56,Female
+P0128,Drug Y,Ineffective,55,Female
+P0129,Drug Y,Effective,57,Female
+P0130,Drug Y,Effective,81,Female
+P0131,Drug Y,Ineffective,49,Male
+P0132,Standard,Ineffective,60,Male
+P0133,Drug X,Ineffective,68,Male
+P0134,Drug X,Ineffective,56,Female
+P0135,Standard,Effective,83,Female
+P0136,Standard,Effective,50,Male
+P0137,Standard,Ineffective,59,Male
+P0138,Standard,Ineffective,45,Male
+P0139,Standard,Ineffective,51,Male
+P0140,Drug X,Effective,58,Male
+P0141,Drug Y,Effective,65,Female
+P0142,Drug X,Ineffective,59,Female
+P0143,Drug Y,Effective,70,Male
+P0144,Standard,Effective,54,Male
+P0145,Drug X,Effective,51,Female
+P0146,Drug Y,Effective,87,Female
+P0147,Drug X,Ineffective,60,Female
+P0148,Drug X,Effective,46,Male
+P0149,Drug X,Effective,47,Male
+P0150,Drug X,Ineffective,44,Male
+P0151,Standard,Ineffective,66,Female
+P0152,Drug Y,Effective,51,Female
+P0153,Standard,Effective,57,Female
+P0154,Drug Y,Effective,54,Male
+P0155,Drug X,Effective,64,Male
+P0156,Drug X,Effective,45,Female
+P0157,Standard,Effective,42,Female
+P0158,Drug X,Effective,58,Female
+P0159,Standard,Ineffective,62,Male
+P0160,Drug X,Effective,59,Male
+P0161,Drug Y,Ineffective,45,Male
+P0162,Standard,Effective,63,Female
+P0163,Drug X,Effective,46,Female
+P0164,Drug X,Effective,49,Female
+P0165,Standard,Ineffective,44,Male
+P0166,Drug X,Effective,71,Female
+P0167,Drug Y,Ineffective,63,Male
+P0168,Drug Y,Ineffective,62,Female
+P0169,Drug X,Effective,70,Female
+P0170,Standard,Effective,89,Female
+P0171,Standard,Ineffective,34,Female
+P0172,Drug Y,Effective,46,Female
+P0173,Standard,Effective,48,Male
+P0174,Drug X,Effective,45,Male
+P0175,Drug X,Effective,42,Female
+P0176,Drug Y,Ineffective,51,Female
+P0177,Standard,Ineffective,40,Male
+P0178,Drug X,Ineffective,59,Female
+P0179,Drug X,Effective,56,Male
+P0180,Drug Y,Effective,61,Female
+P0181,Standard,Ineffective,61,Male
+P0182,Drug X,Effective,62,Female
+P0183,Drug Y,Effective,51,Male
+P0184,Standard,Effective,80,Male
+P0185,Drug Y,Effective,58,Female
+P0186,Drug X,Effective,33,Female
+P0187,Drug X,Effective,43,Male
+P0188,Drug Y,Effective,34,Female
+P0189,Drug Y,Ineffective,55,Male
+P0190,Standard,Ineffective,54,Male
+P0191,Drug Y,Ineffective,49,Male
+P0192,Drug Y,Ineffective,79,Male
+P0193,Standard,Ineffective,62,Female
+P0194,Drug Y,Effective,64,Female
+P0195,Drug Y,Effective,44,Male
+P0196,Standard,Ineffective,43,Male
+P0197,Drug X,Effective,55,Female
+P0198,Standard,Effective,57,Female
+P0199,Standard,Effective,33,Male
+P0200,Drug X,Effective,53,Male
+P0201,Drug Y,Effective,55,Male
+P0202,Drug X,Effective,52,Male
+P0203,Drug X,Ineffective,45,Female
+P0204,Drug Y,Ineffective,49,Female
+P0205,Drug X,Effective,53,Female
+P0206,Standard,Ineffective,56,Female
+P0207,Standard,Effective,62,Male
+P0208,Standard,Ineffective,68,Female
+P0209,Drug X,Ineffective,51,Female
+P0210,Drug X,Effective,50,Female
+P0211,Drug X,Ineffective,60,Male
+P0212,Drug X,Ineffective,62,Female
+P0213,Standard,Ineffective,50,Male
+P0214,Drug Y,Ineffective,64,Female
+P0215,Drug X,Effective,67,Female
+P0216,Standard,Effective,71,Female
+P0217,Drug Y,Ineffective,76,Female
+P0218,Drug X,Effective,45,Female
+P0219,Drug X,Effective,55,Male
+P0220,Drug Y,Effective,55,Female
+P0221,Standard,Ineffective,54,Female
+P0222,Drug X,Effective,47,Male
+P0223,Standard,Ineffective,37,Male
+P0224,Standard,Effective,56,Male
+P0225,Standard,Ineffective,46,Female
+P0226,Drug X,Ineffective,56,Female
+P0227,Drug X,Effective,45,Female
+P0228,Standard,Ineffective,42,Female
+P0229,Drug X,Effective,58,Female
+P0230,Drug Y,Ineffective,57,Female
+P0231,Standard,Ineffective,62,Male
+P0232,Drug X,Effective,81,Male
+P0233,Standard,Effective,58,Male
+P0234,Standard,Effective,61,Female
+P0235,Standard,Ineffective,42,Male
+P0236,Drug Y,Ineffective,40,Male
+P0237,Standard,Ineffective,74,Male
+P0238,Drug Y,Effective,44,Female
+P0239,Standard,Ineffective,42,Female
+P0240,Standard,Effective,55,Female
+P0241,Standard,Ineffective,54,Male
+P0242,Drug X,Effective,44,Female
+P0243,Drug X,Effective,51,Female
+P0244,Drug X,Ineffective,70,Female
+P0245,Drug Y,Effective,45,Male
+P0246,Drug Y,Ineffective,38,Male
+P0247,Drug Y,Ineffective,66,Female
+P0248,Drug Y,Effective,61,Male
+P0249,Standard,Effective,48,Female
+P0250,Standard,Ineffective,36,Female
+P0251,Drug X,Effective,46,Male
+P0252,Standard,Effective,54,Female
+P0253,Drug Y,Effective,69,Male
+P0254,Drug Y,Ineffective,43,Female
+P0255,Drug X,Effective,54,Male
+P0256,Standard,Effective,63,Male
+P0257,Standard,Ineffective,26,Male
+P0258,Standard,Ineffective,67,Male
+P0259,Standard,Ineffective,41,Female
+P0260,Standard,Ineffective,59,Male
+P0261,Drug Y,Ineffective,58,Male
+P0262,Drug Y,Ineffective,68,Male
+P0263,Drug Y,Effective,62,Male
+P0264,Standard,Ineffective,26,Male
+P0265,Drug X,Effective,46,Female
+P0266,Drug Y,Effective,57,Female
+P0267,Standard,Effective,53,Male
+P0268,Drug X,Effective,61,Female
+P0269,Standard,Effective,64,Female
+P0270,Drug Y,Effective,62,Male
+P0271,Standard,Effective,52,Female
+P0272,Standard,Ineffective,33,Male
+P0273,Drug X,Effective,50,Male
+P0274,Standard,Ineffective,60,Male
+P0275,Drug X,Effective,42,Male
+P0276,Drug Y,Effective,63,Female
+P0277,Drug Y,Ineffective,66,Female
+P0278,Standard,Effective,57,Male
+P0279,Drug X,Effective,18,Female
+P0280,Drug X,Effective,40,Female
+P0281,Standard,Effective,78,Female
+P0282,Drug Y,Effective,48,Female
+P0283,Drug Y,Effective,31,Female
+P0284,Drug X,Effective,70,Male
+P0285,Drug X,Ineffective,55,Female
+P0286,Standard,Effective,68,Female
+P0287,Drug X,Effective,58,Female
+P0288,Drug Y,Ineffective,61,Female
+P0289,Standard,Effective,59,Male
+P0290,Drug X,Effective,63,Male
+P0291,Standard,Effective,82,Male
+P0292,Drug X,Effective,67,Male
+P0293,Standard,Effective,36,Female
+P0294,Standard,Ineffective,60,Female
+P0295,Standard,Ineffective,69,Female
+P0296,Drug X,Effective,69,Female
+P0297,Drug Y,Ineffective,50,Female
+P0298,Standard,Ineffective,69,Female
+P0299,Drug X,Effective,66,Female
+P0300,Drug X,Ineffective,86,Female

@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>临床数据统计分析平台</title>
+    <link rel="stylesheet" href="/static/css/theme.css?v=2.2.0" />
+    <link rel="stylesheet" href="/static/css/layout.css?v=2.2.0" />
+    <link rel="stylesheet" href="/static/css/components.css?v=2.2.0" />
+    <link rel="stylesheet" href="/static/css/tables.css?v=2.2.0" />
+    <script src="/static/vendor/plotly.min.js"></script>
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div class="topbar-left">
+          <h1>临床数据统计分析平台</h1>
+          <span class="topbar-sub">Clinical Statistics Analysis Platform</span>
+        </div>
+        <div class="flow-line" aria-label="workflow">
+          <span class="is-active">选择</span>
+          <span>数据</span>
+          <span>配置</span>
+          <span>分析</span>
+          <span>导出</span>
+        </div>
+      </header>
+
+      <section class="workbench-grid">
+        <aside class="panel input-panel">
+          <div class="panel-section">
+            <div class="panel-head">
+              <span class="step">01</span>
+              <div>
+                <h2>检验方法</h2>
+                <p id="selectedTestLabel">请选择统计方法</p>
+              </div>
+            </div>
+
+            <div class="test-cat-tabs" id="testCatTabs">
+              <button class="cat-tab active" data-cat="parametric">参数检验</button>
+              <button class="cat-tab" data-cat="nonparametric">非参数检验</button>
+              <button class="cat-tab" data-cat="categorical">分类资料</button>
+              <button class="cat-tab" data-cat="correlation">相关分析</button>
+              <button class="cat-tab" data-cat="survival">生存分析</button>
+              <button class="cat-tab" data-cat="regression">回归/判别</button>
+            </div>
+
+            <div class="mini-test-grid" id="miniTestGrid"></div>
+          </div>
+
+          <div class="panel-section">
+            <div class="panel-head">
+              <span class="step">02</span>
+              <div>
+                <h2>数据</h2>
+                <p>CSV / Excel</p>
+              </div>
+            </div>
+
+            <div class="data-actions">
+              <button id="loadExampleBtn" class="action-btn action-btn-primary">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1v10M4 7l4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 13h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                加载示例
+              </button>
+              <button id="uploadDataBtn" class="action-btn action-btn-ghost">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 11V1M4 5l4-4 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 13h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                上传数据
+              </button>
+            </div>
+            <input id="wsFileInput" type="file" accept=".csv,.tsv,.txt,.xlsx,.xls" hidden />
+
+            <div class="field-row" id="sheetRow" hidden>
+              <label for="sheetSelect">工作表</label>
+              <select id="sheetSelect"></select>
+            </div>
+
+            <div class="data-source-meta" id="wsDataMeta">请先选择检验方法</div>
+          </div>
+
+          <div class="panel-section">
+            <div class="panel-head">
+              <span class="step">03</span>
+              <div>
+                <h2>变量配置</h2>
+                <p>选择分析变量</p>
+              </div>
+            </div>
+            <div id="varControls">
+              <div class="empty-state small">请先选择检验方法并载入数据</div>
+            </div>
+          </div>
+
+          <div class="panel-section" id="postHocSection" hidden>
+            <div class="panel-head">
+              <span class="step">04</span>
+              <div>
+                <h2>事后检验</h2>
+                <p>多组比较的事后两两比较</p>
+              </div>
+            </div>
+            <div class="field-row">
+              <label for="postHocSelect">事后检验方法</label>
+              <select id="postHocSelect">
+                <option value="">不使用事后检验</option>
+                <option value="tukey">Tukey HSD（方差齐性）</option>
+                <option value="bonferroni">Bonferroni 校正</option>
+                <option value="lsd">LSD (Fisher's LSD)</option>
+                <option value="games_howell">Games-Howell（方差不齐）</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="panel-section panel-section-action">
+            <button id="runAnalysisBtn" class="generate-btn">执行分析</button>
+          </div>
+
+          <div id="statusStack" class="status-stack">
+            <div class="status-item active">等待操作</div>
+          </div>
+        </aside>
+
+        <section class="center-panel">
+          <section class="panel overview-panel">
+            <div class="panel-head inline">
+              <span class="step sm">概览</span>
+              <div>
+                <h2>数据概览</h2>
+                <p id="datasetMeta">未载入数据</p>
+              </div>
+            </div>
+            <div class="summary-strip" id="metricGrid">
+              <div class="summary-card"><span>N</span><strong>--</strong><small>样本</small></div>
+              <div class="summary-card"><span>Vars</span><strong>--</strong><small>变量</small></div>
+              <div class="summary-card"><span>Missing</span><strong>--</strong><small>缺失%</small></div>
+              <div class="summary-card"><span>Method</span><strong>--</strong><small>检验</small></div>
+            </div>
+            <div id="previewTable" class="compact-table-wrap">
+              <div class="empty-state small">等待数据载入</div>
+            </div>
+          </section>
+
+          <nav class="tabs" aria-label="result tabs">
+            <button class="tab active" data-tab="analysis">分析结果</button>
+            <button class="tab" data-tab="descriptive">描述统计</button>
+            <button class="tab" data-tab="chart">可视化</button>
+          </nav>
+
+          <section class="tab-panel active" id="tab-analysis">
+            <article class="analysis-card">
+              <div class="analysis-head">
+                <h3 id="analysisTitle">分析结果</h3>
+                <div class="analysis-tools">
+                  <span id="resultBadge" class="badge">等待</span>
+                  <div id="analysisExportBar" class="figure-actions" style="display:none;">
+                    <a href="#" class="export-btn" data-fmt="excel">Excel</a>
+                    <a href="#" class="export-btn" data-fmt="csv">CSV</a>
+                    <a href="#" class="export-btn" data-fmt="html">HTML</a>
+                    <a href="#" class="export-btn" data-fmt="clipboard">复制</a>
+                  </div>
+                </div>
+              </div>
+
+              <div id="resultSummary" class="result-summary">
+                <div class="empty-state">请在左侧选择检验方法、载入数据并点击执行分析</div>
+              </div>
+
+              <div id="resultTableContainer" class="compact-table-wrap" style="margin-top:12px;"></div>
+              <div id="groupStatsContainer" class="compact-table-wrap" style="margin-top:12px;"></div>
+              <div id="postHocContainer" class="compact-table-wrap" style="margin-top:12px;"></div>
+            </article>
+          </section>
+
+          <section class="tab-panel" id="tab-descriptive">
+            <article class="analysis-card">
+              <div class="analysis-head">
+                <h3>描述统计</h3>
+                <span>所有变量的描述性统计量</span>
+              </div>
+              <div class="field-row" style="margin-bottom:10px;">
+                <label>选择变量（留空为全部数值变量）</label>
+                <select id="descVarSelect" multiple size="5"></select>
+              </div>
+              <button id="runDescriptiveBtn" class="generate-btn" style="margin-bottom:10px;">生成描述统计</button>
+              <div id="descriptiveTableContainer" class="compact-table-wrap">
+                <div class="empty-state small">尚未生成描述统计表</div>
+              </div>
+            </article>
+          </section>
+
+          <section class="tab-panel" id="tab-chart">
+            <article class="analysis-card">
+              <div class="analysis-head">
+                <h3 id="chartPreviewTitle">统计图形</h3>
+                <div class="analysis-tools">
+                  <select id="chartThemeSelect" class="theme-select" title="选择图表主题">
+                    <option value="CNS">CNS 顶刊</option>
+                    <option value="Nature">Nature</option>
+                    <option value="Lancet">Lancet</option>
+                    <option value="NEJM">NEJM</option>
+                    <option value="Science">Science</option>
+                    <option value="warm">暖色系</option>
+                    <option value="cool">冷色系</option>
+                    <option value="pastel">柔和色</option>
+                    <option value="dark_muted">暗色系</option>
+                    <option value="mono">黑白灰</option>
+                  </select>
+                  <span id="chartPreviewBadge" class="badge">Plotly</span>
+                  <div id="chartExportBar" class="figure-actions" style="display:none;">
+                    <a href="#" class="chart-export-btn" data-chart-fmt="png">PNG</a>
+                    <a href="#" class="chart-export-btn" data-chart-fmt="svg">SVG</a>
+                    <a href="#" class="chart-export-btn" data-chart-fmt="pdf">PDF</a>
+                  </div>
+                </div>
+              </div>
+              <div id="chartPreviewContainer">
+                <div class="empty-state">执行分析后可查看统计图形</div>
+              </div>
+            </article>
+          </section>
+
+          <div class="bottom-export-row">
+            <div class="export-section">
+              <h4>结果导出</h4>
+              <div id="downloadList" class="download-list empty">执行分析后可导出</div>
+            </div>
+            <div class="export-section">
+              <h4>示例数据</h4>
+              <div id="exampleList" class="download-list">
+                <span class="hint-text">选择检验方法后可下载对应示例</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script src="/static/js/utils.js?v=2.2.0"></script>
+    <script src="/static/js/chartThemes.js?v=2.2.0"></script>
+    <script src="/static/js/plotConfigs.js?v=2.2.0"></script>
+    <script src="/static/js/upload.js?v=2.2.0"></script>
+    <script src="/static/js/variableSelect.js?v=2.2.0"></script>
+    <script src="/static/js/tableGenerator.js?v=2.2.0"></script>
+    <script src="/static/js/dataPreview.js?v=2.2.0"></script>
+    <script src="/static/js/analysis.js?v=2.2.0"></script>
+    <script src="/static/js/download.js?v=2.2.0"></script>
+    <script src="/static/js/app.js?v=2.2.0"></script>
+  </body>
+</html>
