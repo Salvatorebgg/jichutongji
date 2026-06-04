@@ -40,6 +40,45 @@ class AnalyzeRequest(BaseModel):
     event_var: str | None = None       # Event variable for survival analysis
     predictor_vars: list[str] | None = None  # Predictor variables for regression
     x_vars: list[str] | None = None    # Alternative predictor variables for regression
+    # Table params
+    decimal_places: int = 2
+    p_digits: int = 3
+
+
+class ChartRequest(BaseModel):
+    upload_id: str | None = None
+    sheet_name: str | None = None
+    use_demo: bool = False
+    dataset_name: str | None = None
+    chart_type: str
+    x_var: str | None = None
+    y_var: str | None = None
+    color_var: str | None = None
+    facet_var: str | None = None
+    size_var: str | None = None
+    group_var: str | None = None
+    time_var: str | None = None
+    event_var: str | None = None
+    outcome_var: str | None = None
+    predictor_var: str | None = None
+    province_var: str | None = None
+    country_var: str | None = None
+    value_vars: list[str] | None = None
+    chart_theme: str = "clinicalLightTheme"
+    title: str | None = None
+    extra_params: dict | None = Field(default_factory=dict)
+
+
+class TableRequest(BaseModel):
+    upload_id: str | None = None
+    sheet_name: str | None = None
+    use_demo: bool = False
+    dataset_name: str | None = None
+    table_type: str = "baseline"
+    group_var: str | None = None
+    variables: list[str] | None = None
+    decimal_places: int = 2
+    p_digits: int = 3
 
 
 class StatResult(BaseModel):
@@ -58,6 +97,8 @@ class StatResult(BaseModel):
 
 
 class ExportRequest(BaseModel):
-    format: str = "csv"
-    stat_result: dict | None = None
+    upload_id: str | None = None
+    format: str = "png"  # png, svg, csv, json
+    chart_data: dict | None = None
     table_data: list[dict] | None = None
+    stat_result: dict | None = None

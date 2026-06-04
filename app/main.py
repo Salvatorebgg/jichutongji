@@ -12,7 +12,7 @@ from fastapi.responses import FileResponse, HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from app.config import STATIC_DIR, EXAMPLES_DIR, UPLOADS_DIR, OUTPUTS_DIR
-from app.schemas import AnalyzeRequest, ExportRequest
+from app.schemas import AnalyzeRequest, ChartRequest, TableRequest, ExportRequest
 from app.services.io_service import (
     read_file,
     get_sheet_names,
@@ -112,7 +112,7 @@ async def upload_file(file: UploadFile = File(...)) -> dict:
         var_types = classify_variables(df)
         summary = summarize_dataset(df, var_types)
         sheets = get_sheet_names(meta["path"], meta["filename"])
-        preview = df.head(10).fillna("").to_dict(orient="records")
+        preview = df.fillna("").to_dict(orient="records")
         return {
             "upload_id": meta["upload_id"],
             "filename": meta["filename"],
@@ -162,7 +162,7 @@ async def read_sheet(
         "columns": list(df.columns),
         "dtypes": {c: str(df[c].dtype) for c in df.columns},
         "variable_types": var_types,
-        "preview": df.head(10).fillna("").to_dict(orient="records"),
+        "preview": df.fillna("").to_dict(orient="records"),
         "missing_percent": summary["missing_percent"],
         "summary": summary,
     }
@@ -192,7 +192,7 @@ def get_example(name: str) -> dict:
         "columns": list(df.columns),
         "dtypes": {c: str(df[c].dtype) for c in df.columns},
         "variable_types": var_types,
-        "preview": df.head(10).fillna("").to_dict(orient="records"),
+        "preview": df.fillna("").to_dict(orient="records"),
         "missing_percent": summary["missing_percent"],
         "summary": summary,
     }
@@ -270,6 +270,8 @@ def run_analysis(req: AnalyzeRequest) -> dict:
             result = anova_oneway(df, var, group_var, post_hoc)
 
         elif test_type == "repeated_measures_anova":
+            if not group_var or group_var not in df.columns:
+                raise HTTPException(status_code=400, detail="Repeated measures ANOVA requires a group variable")
             subject_var = getattr(req, "subject_var", "") or req.upload_id or ""
             if not subject_var or subject_var not in df.columns:
                 # Try to infer subject column
@@ -281,6 +283,8 @@ def run_analysis(req: AnalyzeRequest) -> dict:
             result = repeated_measures_anova(df, var, subject_var, group_var)
 
         elif test_type == "ancova":
+            if not group_var or group_var not in df.columns:
+                raise HTTPException(status_code=400, detail="ANCOVA requires a group variable")
             covar = getattr(req, "covar", "")
             if not covar or covar not in df.columns:
                 raise HTTPException(status_code=400, detail="ANCOVA requires a covariate variable")
@@ -303,6 +307,8 @@ def run_analysis(req: AnalyzeRequest) -> dict:
             result = wilcoxon_signed_rank_test(df, var, paired_var)
 
         elif test_type == "friedman":
+            if not group_var or group_var not in df.columns:
+                raise HTTPException(status_code=400, detail="Friedman test requires a group variable")
             subject_var = getattr(req, "subject_var", "")
             if not subject_var or subject_var not in df.columns:
                 subject_candidates = [c for c in df.columns if "subject" in c.lower() or "patient" in c.lower() or "id" in c.lower()]
@@ -343,6 +349,8 @@ def run_analysis(req: AnalyzeRequest) -> dict:
 
         # ── Survival ──
         elif test_type == "log_rank":
+            if not group_var or group_var not in df.columns:
+                raise HTTPException(status_code=400, detail="Log-rank test requires a group variable")
             time_var = getattr(req, "time_var", "")
             event_var = getattr(req, "event_var", paired_var) or paired_var or ""
             if not time_var or time_var not in df.columns:
@@ -430,32 +438,44 @@ def descriptive_stats(req: AnalyzeRequest) -> dict:
 # ── Tables ─────────────────────────────────────────────
 
 
+@app.post("/api/table/baseline")
 @app.post("/api/tables/baseline")
-def baseline_table(req: AnalyzeRequest) -> dict:
+def baseline_table(req: TableRequest | AnalyzeRequest) -> dict:
     """Generate baseline characteristics table (Table 1)."""
     df = _get_df(req)
     group_var = req.group_var
     if not group_var or group_var not in df.columns:
-        raise HTTPException(status_code=400, detail="Baseline table requires a group variable")
-    table = build_baseline_table(df, group_var, req.variables if hasattr(req, 'variables') and req.variables else None)
-    return _sanitize({"status": "ok", "table": table})
+        # Auto-select group var
+        cat_cols = [c for c in df.columns if df[c].nunique() <= 10 and df[c].nunique() >= 2]
+        if cat_cols:
+            group_var = cat_cols[0]
+        else:
+            raise HTTPException(status_code=400, detail="No suitable group variable found")
+    variables = req.variables if hasattr(req, 'variables') and req.variables else None
+    decimal_places = req.decimal_places if hasattr(req, 'decimal_places') else 2
+    p_digits = req.p_digits if hasattr(req, 'p_digits') else 3
+    table = build_baseline_table(df, group_var, variables, decimal_places, p_digits)
+    return _sanitize({"status": "ok", "columns": table.get("columns", []), "rows": table.get("rows", []), "n_total": table.get("n_total", len(df))})
 
 
+@app.post("/api/table/descriptive")
 @app.post("/api/tables/descriptive")
-def descriptive_table(req: AnalyzeRequest) -> dict:
+def descriptive_table(req: TableRequest | AnalyzeRequest) -> dict:
     """Generate overall descriptive statistics table."""
     df = _get_df(req)
     variables = req.variables if hasattr(req, 'variables') and req.variables else None
-    table = build_descriptive_table(df, variables)
-    return _sanitize({"status": "ok", "table": table})
+    decimal_places = req.decimal_places if hasattr(req, 'decimal_places') else 2
+    table = build_descriptive_table(df, variables, decimal_places)
+    return _sanitize({"status": "ok", "columns": table.get("columns", []), "rows": table.get("rows", []), "n_total": len(df)})
 
 
+@app.post("/api/table/missing")
 @app.post("/api/tables/missing")
-def missing_table(req: AnalyzeRequest) -> dict:
+def missing_table(req: TableRequest | AnalyzeRequest) -> dict:
     """Generate missing value statistics table."""
     df = _get_df(req)
     table = build_missing_table(df)
-    return _sanitize({"status": "ok", "table": table})
+    return _sanitize({"status": "ok", "columns": table.get("columns", []), "rows": table.get("rows", []), "n_total": len(df)})
 
 
 # ── Chart ──────────────────────────────────────────────
@@ -470,6 +490,14 @@ def chart_variables(req: dict) -> dict:
     return _sanitize(get_chart_variables(df, chart_type))
 
 
+@app.post("/api/chart/data")
+def chart_data(req: ChartRequest) -> dict:
+    """Prepare chart data for rendering."""
+    from app.services.chart_service import prepare_chart_data
+    df = _get_df_simple(req.dict() if hasattr(req, "dict") else req)
+    return prepare_chart_data(df, req.chart_type, req.dict())
+
+
 # ── Publication Export ─────────────────────────────────
 
 
@@ -478,6 +506,7 @@ def chart_variables(req: dict) -> dict:
 def publication_export(req: dict) -> Response:
     """Export chart as publication-quality image (PNG/SVG/PDF)."""
     from app.services.publication_chart_service import (
+        set_publication_style,
         generate_scatter_plot,
         generate_box_plot,
         generate_bar_plot,
@@ -501,6 +530,12 @@ def publication_export(req: dict) -> Response:
     color_var = req.get("color_var", "")
     group_var = req.get("group_var", "")
     label_var = req.get("label_var", "")
+
+    # Set publication style
+    user_colors = req.get("colors") or None
+    user_marker_size = req.get("marker_size")
+    user_line_width = req.get("line_width")
+    set_publication_style(style, colors=user_colors, marker_size=user_marker_size, line_width=user_line_width)
 
     generators = {
         "scatter": lambda: generate_scatter_plot(df, x_var, y_var, color_var or None, title, style),
@@ -605,7 +640,7 @@ def _normalize_publication_style(style: str | None) -> str:
     return "cns"
 
 
-def _get_df(req: AnalyzeRequest) -> pd.DataFrame:
+def _get_df(req: AnalyzeRequest | TableRequest) -> pd.DataFrame:
     if req.use_demo or not req.upload_id:
         ds = req.dataset_name or "general_clinical_example"
         filepath = EXAMPLES_DIR / f"{ds}.csv"

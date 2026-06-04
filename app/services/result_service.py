@@ -25,13 +25,14 @@ def build_result_discussion(result: dict[str, Any], context: dict[str, Any] | No
     p_value = result.get("p_value")
     p_text = format_p_value(p_value)
     significant = bool(result.get("significant"))
+    chart_data = result.get("chart_data") or {}
     primary = context.get("var") or context.get("primary") or _first_nonempty(
         result.get("details", {}).get("variable_1"),
-        result.get("chart_data", {}).get("y_label"),
-        result.get("chart_data", {}).get("y_var"),
+        chart_data.get("y_label"),
+        chart_data.get("y_var"),
         "目标变量",
     )
-    group_var = context.get("group_var") or result.get("chart_data", {}).get("x_label")
+    group_var = context.get("group_var") or chart_data.get("x_label")
     method = result.get("method") or result.get("test_name") or "统计检验"
 
     headline = _headline(result, p_text, significant)

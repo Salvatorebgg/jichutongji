@@ -143,6 +143,17 @@ def t_test_independent(df: pd.DataFrame, var: str, group_var: str) -> dict:
     note = ""
     if not is_normal_a or not is_normal_b:
         note = "数据不完全满足正态性假设，建议同时参考Mann-Whitney U检验结果。"
+    # Effect size: Cohen's d
+    d_val = cohens_d(a, b) if len(a) > 1 and len(b) > 1 else None
+    # 95% CI for mean difference (Welch approximation)
+    se_diff = np.sqrt(np.var(a, ddof=1)/len(a) + np.var(b, ddof=1)/len(b))
+    df_welch = (np.var(a, ddof=1)/len(a) + np.var(b, ddof=1)/len(b))**2 / (
+        (np.var(a, ddof=1)/len(a))**2/(len(a)-1) + (np.var(b, ddof=1)/len(b))**2/(len(b)-1)
+    ) if se_diff > 0 else 1
+    t_crit = stats.t.ppf(0.975, df=max(1, df_welch))
+    mean_diff = float(np.mean(a) - np.mean(b))
+    ci_lower = mean_diff - t_crit * se_diff
+    ci_upper = mean_diff + t_crit * se_diff
     return {
         "test_type": "t_test_independent",
         "test_name": "独立样本t检验 (Welch's t-test)",
@@ -155,7 +166,9 @@ def t_test_independent(df: pd.DataFrame, var: str, group_var: str) -> dict:
         "details": {
             "group_1": {"name": str(groups[0]), "n": int(len(a)), "mean": round(float(np.mean(a)), 3), "std": round(float(np.std(a, ddof=1)), 3), "normal": is_normal_a},
             "group_2": {"name": str(groups[1]), "n": int(len(b)), "mean": round(float(np.mean(b)), 3), "std": round(float(np.std(b, ddof=1)), 3), "normal": is_normal_b},
-            "mean_diff": round(float(np.mean(a) - np.mean(b)), 3),
+            "mean_diff": round(mean_diff, 3),
+            "ci_95": [round(float(ci_lower), 4), round(float(ci_upper), 4)],
+            "cohens_d": round(float(d_val), 4) if d_val is not None else None,
         },
         "descriptive_stats": _group_descriptive(df, var, group_var),
         "chart_data": _build_chart_data(df, var, group_var),
@@ -212,8 +225,9 @@ def one_sample_t_test(df: pd.DataFrame, var: str, hypothesized_mean: float = 0.0
     sd_val = float(np.std(values, ddof=1))
     se = sd_val / np.sqrt(len(values))
     t_crit = stats.t.ppf(0.975, df=len(values) - 1)
-    ci_lower = mean_val - hypothesized_mean - t_crit * se
-    ci_upper = mean_val - hypothesized_mean + t_crit * se
+    ci_lower = mean_val - t_crit * se
+    ci_upper = mean_val + t_crit * se
+    mean_diff_val = mean_val - hypothesized_mean
     normal = _test_normality(series)
     return {
         "test_type": "one_sample_t_test",
@@ -232,7 +246,7 @@ def one_sample_t_test(df: pd.DataFrame, var: str, hypothesized_mean: float = 0.0
             "q1": round(float(np.quantile(values, 0.25)), 3),
             "q3": round(float(np.quantile(values, 0.75)), 3),
             "hypothesized_mean": round(float(hypothesized_mean), 4),
-            "mean_diff": round(float(mean_val - hypothesized_mean), 4),
+            "mean_diff": round(float(mean_diff_val), 4),
             "ci_95": [round(float(ci_lower), 4), round(float(ci_upper), 4)],
             "normal": normal,
         },
@@ -347,6 +361,10 @@ def anova_oneway(df: pd.DataFrame, var: str, group_var: str, post_hoc: str | Non
         note = "部分组数据不完全满足正态性假设，建议同时参考Kruskal-Wallis检验结果。"
     if not equal_var:
         note += " Levene检验提示方差不齐，建议使用Welch ANOVA或非参数检验。"
+    # Effect size: eta-squared
+    df_effect = len(group_data) - 1
+    df_error = int(sum(len(v) for v in data_list)) - len(group_data)
+    eta_sq = eta_squared(f_stat, df_effect, df_error) if df_error > 0 else None
     result = {
         "test_type": "anova",
         "test_name": "单因素方差分析 (One-way ANOVA)",
@@ -359,6 +377,9 @@ def anova_oneway(df: pd.DataFrame, var: str, group_var: str, post_hoc: str | Non
         "details": {
             "n_groups": len(group_data),
             "total_n": int(sum(len(v) for v in data_list)),
+            "df_between": int(df_effect),
+            "df_within": int(df_error),
+            "eta_squared": round(float(eta_sq), 4) if eta_sq is not None else None,
             "group_stats": {str(g): {"n": int(len(v)), "mean": round(float(np.mean(v)), 3), "std": round(float(np.std(v, ddof=1)), 3), "normal": normality_results.get(str(g), False)} for g, v in group_data.items()},
             "levene_test": {"statistic": round(float(levene_stat), 4) if levene_stat else None, "p_value": round(float(levene_p), 4) if levene_p else None, "equal_var": equal_var},
         },
@@ -399,6 +420,8 @@ def chi_square_test(df: pd.DataFrame, var: str, group_var: str) -> dict:
                 "degrees_of_freedom": int(dof),
                 "contingency_table": {"rows": contingency.index.tolist(), "cols": contingency.columns.tolist(), "data": contingency.values.tolist()},
                 "min_expected": round(float(min_expected), 2),
+                "cells_lt5_pct": round(n_cells_lt5 / total_cells * 100, 1),
+                "cohens_w": round(float(cohens_w(contingency.values, int(np.sum(contingency.values)))), 4) if int(np.sum(contingency.values)) > 0 else None,
                 "pct_cells_lt5": round(n_cells_lt5 / total_cells * 100, 1),
             },
             "descriptive_stats": _group_descriptive(df, var, group_var),
@@ -580,11 +603,11 @@ def mcnemar_test(df: pd.DataFrame, var: str, paired_var: str, continuity_correct
         return {
             "test_type": "mcnemar",
             "test_name": "McNemar检验 (配对分类资料)",
-            "statistic": round(float(chi2_stat), 4) if chi2_stat else None,
+            "statistic": round(float(chi2_stat), 4) if chi2_stat is not None else None,
             "p_value": round(float(p_val), 6),
             "significant": p_val < 0.05,
             "method": method_used,
-            "summary": f"{'χ²' if chi2_stat else 'Exact'} = {chi2_stat:.4f}" if chi2_stat else f"Exact p = {format_p_value(p_val)}",
+            "summary": f"χ² = {chi2_stat:.4f}, p = {format_p_value(p_val)}" if chi2_stat is not None else f"Exact p = {format_p_value(p_val)}",
             "details": {"discordant_pairs": {"b": int(b), "c": int(c), "total": int(b + c)}, "categories": all_cats},
             "chart_data": {"chart_type": "paired_bar", "var_1_name": str(var), "var_2_name": str(paired_var), "categories": all_cats, "var_1_counts": [int((df_clean[var] == cat).sum()) for cat in all_cats], "var_2_counts": [int((df_clean[paired_var] == cat).sum()) for cat in all_cats], "title": f"配对分类比较: {var} vs {paired_var}"},
             "post_hoc": None,
@@ -623,6 +646,10 @@ def mcnemar_test(df: pd.DataFrame, var: str, paired_var: str, continuity_correct
 
 def friedman_test(df: pd.DataFrame, var: str, subject_var: str, group_var: str) -> dict:
     """Friedman test for repeated measures (non-parametric one-way RM ANOVA)."""
+    if not group_var or group_var not in df.columns:
+        return {"error": "Friedman检验需要有效的分组变量"}
+    if not subject_var or subject_var not in df.columns:
+        return {"error": "Friedman检验需要有效的受试者ID变量"}
     subjects = df[subject_var].dropna().unique()
     groups = df[group_var].dropna().unique()
     if len(groups) < 2:
@@ -633,7 +660,7 @@ def friedman_test(df: pd.DataFrame, var: str, subject_var: str, group_var: str) 
         for s in subjects:
             vals = df.loc[(df[subject_var] == s) & (df[group_var] == g), var].values
             g_data.append(vals[0] if len(vals) > 0 else np.nan)
-        data_for_test.append(np.array(g_data))
+        data_for_test.append(np.array(g_data, dtype=float))
     valid_mask = np.all([~np.isnan(d) for d in data_for_test], axis=0)
     clean_data = [d[valid_mask] for d in data_for_test]
     n_valid = int(np.sum(valid_mask))
@@ -659,6 +686,10 @@ def friedman_test(df: pd.DataFrame, var: str, subject_var: str, group_var: str) 
 
 def repeated_measures_anova(df: pd.DataFrame, var: str, subject_var: str, group_var: str, between_var: str | None = None) -> dict:
     """Repeated measures ANOVA (one-way within, or mixed design)."""
+    if not group_var or group_var not in df.columns:
+        return {"error": "重复测量方差分析需要有效的组内因素变量"}
+    if not subject_var or subject_var not in df.columns:
+        return {"error": "重复测量方差分析需要有效的受试者ID变量"}
     subjects = df[subject_var].dropna().unique()
     groups = df[group_var].dropna().unique()
     if len(groups) < 2:
@@ -669,24 +700,73 @@ def repeated_measures_anova(df: pd.DataFrame, var: str, subject_var: str, group_
         for s in subjects:
             vals = df.loc[(df[subject_var] == s) & (df[group_var] == g), var].values
             g_data.append(vals[0] if len(vals) > 0 else np.nan)
-        data_for_test.append(np.array(g_data))
+        data_for_test.append(np.array(g_data, dtype=float))
     valid_mask = np.all([~np.isnan(d) for d in data_for_test], axis=0)
     clean_data = [d[valid_mask] for d in data_for_test]
     n_valid = int(np.sum(valid_mask))
     if n_valid < 3:
         return {"error": f"有效完整观测不足（仅{n_valid}个受试者），需要至少3个"}
     try:
-        f_stat, p_val = stats.f_oneway(*clean_data)
+        # Proper repeated measures ANOVA with subject blocking
+        # Compute SS_total, SS_subjects, SS_treatment, SS_error
+        all_vals = np.concatenate(clean_data)
+        grand_mean = np.mean(all_vals)
+        n = n_valid  # number of subjects
+        k = len(clean_data)  # number of conditions
+
+        # Subject means (across conditions)
+        subject_means = np.mean(np.column_stack(clean_data), axis=1)
+
+        # Condition means
+        condition_means = np.array([np.mean(d) for d in clean_data])
+
+        # Sum of squares
+        ss_total = np.sum((all_vals - grand_mean) ** 2)
+        ss_subjects = k * np.sum((subject_means - grand_mean) ** 2)
+        ss_treatment = n * np.sum((condition_means - grand_mean) ** 2)
+        ss_error = ss_total - ss_subjects - ss_treatment
+
+        # Handle negative SS_error due to floating point
+        if ss_error < 0:
+            ss_error = max(ss_error, 1e-10)
+
+        # Degrees of freedom
+        df_treatment = k - 1
+        df_error = (n - 1) * (k - 1)
+
+        if df_error <= 0 or ss_error <= 0:
+            return {"error": "自由度不足或误差为0，无法计算F统计量"}
+
+        ms_treatment = ss_treatment / df_treatment
+        ms_error = ss_error / df_error
+        f_stat = ms_treatment / ms_error if ms_error > 0 else float('inf')
+        p_val = float(stats.f.sf(f_stat, df_treatment, df_error))
+
+        # Effect size: partial eta-squared
+        eta_sq = ss_treatment / (ss_treatment + ss_error) if (ss_treatment + ss_error) > 0 else 0.0
+
         return {
             "test_type": "repeated_measures_anova",
             "test_name": "重复测量方差分析 (RM ANOVA)",
             "statistic": round(float(f_stat), 4),
             "p_value": round(float(p_val), 6),
             "significant": p_val < 0.05,
-            "method": "One-way repeated measures ANOVA (univariate approach approximation)",
-            "summary": f"F = {f_stat:.4f}, p = {format_p_value(p_val)}",
-            "note": "注：此处使用单因素ANOVA作为RM ANOVA的简化近似。完整RM ANOVA包含subject效应和球形检验，建议使用SPSS/R等专业软件确认。",
-            "details": {"n_subjects_complete": n_valid, "n_groups": len(groups), "groups": [str(g) for g in groups]},
+            "method": "One-way repeated measures ANOVA (with subject blocking)",
+            "summary": f"F({int(df_treatment)}, {int(df_error)}) = {f_stat:.4f}, p = {format_p_value(p_val)}",
+            "note": "注：此处采用单变量法univariate approach计算RM ANOVA，包含subject效应。未进行球形检验（Mauchly's test）。如需球形校正（Greenhouse-Geisser, Huynh-Feldt）或更完整的分析，建议使用SPSS/R等专业软件。",
+            "details": {
+                "n_subjects_complete": n_valid,
+                "n_groups": len(groups),
+                "groups": [str(g) for g in groups],
+                "ss_treatment": round(float(ss_treatment), 4),
+                "ss_error": round(float(ss_error), 4),
+                "ss_subjects": round(float(ss_subjects), 4),
+                "ms_treatment": round(float(ms_treatment), 4),
+                "ms_error": round(float(ms_error), 4),
+                "df_treatment": int(df_treatment),
+                "df_error": int(df_error),
+                "partial_eta_squared": round(float(eta_sq), 4),
+            },
             "chart_data": {"chart_type": "repeated_measures", "groups": [str(g) for g in groups], "subject_var": subject_var, "values": {str(g): [float(v) if pd.notna(v) else None for v in d] for g, d in zip(groups, clean_data)}, "title": f"重复测量: {var}"},
             "post_hoc": None,
         }
@@ -696,8 +776,13 @@ def repeated_measures_anova(df: pd.DataFrame, var: str, subject_var: str, group_
 
 def pearson_correlation(df: pd.DataFrame, var1: str, var2: str) -> dict:
     """Pearson correlation coefficient."""
-    clean = df[[var1, var2]].dropna()
-    x, y = clean[var1].values, clean[var2].values
+    if var1 not in df.columns or var2 not in df.columns:
+        return {"error": "变量不存在于数据集中"}
+    clean = df[[var1, var2]].copy()
+    clean[var1] = pd.to_numeric(clean[var1], errors="coerce")
+    clean[var2] = pd.to_numeric(clean[var2], errors="coerce")
+    clean = clean.dropna()
+    x, y = clean[var1].values.astype(float), clean[var2].values.astype(float)
     if len(x) < 3:
         return {"error": "样本量不足（需要至少3个完整观测）"}
     try:
@@ -729,8 +814,13 @@ def pearson_correlation(df: pd.DataFrame, var1: str, var2: str) -> dict:
 
 def spearman_correlation(df: pd.DataFrame, var1: str, var2: str) -> dict:
     """Spearman rank correlation coefficient."""
-    clean = df[[var1, var2]].dropna()
-    x, y = clean[var1].values, clean[var2].values
+    if var1 not in df.columns or var2 not in df.columns:
+        return {"error": "变量不存在于数据集中"}
+    clean = df[[var1, var2]].copy()
+    clean[var1] = pd.to_numeric(clean[var1], errors="coerce")
+    clean[var2] = pd.to_numeric(clean[var2], errors="coerce")
+    clean = clean.dropna()
+    x, y = clean[var1].values.astype(float), clean[var2].values.astype(float)
     if len(x) < 3:
         return {"error": "样本量不足（需要至少3个完整观测）"}
     try:
@@ -753,21 +843,28 @@ def spearman_correlation(df: pd.DataFrame, var1: str, var2: str) -> dict:
 
 def log_rank_test(df: pd.DataFrame, time_var: str, event_var: str, group_var: str) -> dict:
     """Log-rank test for survival analysis."""
-    from lifelines.statistics import logrank_test
-    from lifelines.utils import datetimes_to_durations
+    if not group_var or group_var not in df.columns:
+        return {"error": "Log-rank检验需要有效的分组变量"}
     groups = sorted(df[group_var].dropna().unique().tolist())
     if len(groups) < 2:
         return {"error": "Log-rank检验需要至少2组"}
     group_data = {}
     for g in groups:
+        # Drop rows where either time or event is NaN to ensure alignment
+        mask = (df[group_var] == g) & df[time_var].notna() & df[event_var].notna()
         group_data[str(g)] = {
-            "time": df.loc[df[group_var] == g, time_var].dropna().values,
-            "event": df.loc[df[group_var] == g, event_var].dropna().values,
+            "time": df.loc[mask, time_var].values.astype(float),
+            "event": df.loc[mask, event_var].values.astype(int),
         }
+    # Validate data
+    for g in groups:
+        gk = str(g)
+        if len(group_data[gk]["time"]) < 2:
+            return {"error": f"分组 '{gk}' 有效观测不足（需要至少2个完整观测）"}
     try:
         result = logrank_test(
-            group_data[groups[0]]["time"], group_data[groups[1]]["time"],
-            group_data[groups[0]]["event"].astype(int), group_data[groups[1]]["event"].astype(int),
+            group_data[str(groups[0])]["time"], group_data[str(groups[1])]["time"],
+            group_data[str(groups[0])]["event"], group_data[str(groups[1])]["event"],
         )
         return {
             "test_type": "log_rank",
@@ -820,7 +917,8 @@ def discriminant_analysis(
     working[outcome_var] = working[outcome_var].astype("object")
     working = working.dropna(subset=[outcome_var] + predictors)
 
-    predictors = [col for col in predictors if working[col].nunique(dropna=True) > 1]
+    # Remove constant columns after dropna (may have changed)
+    predictors = [col for col in predictors if col in working.columns and working[col].nunique(dropna=True) > 1]
     if not predictors:
         return {"error": "预测变量均为常量或缺失，无法进行判别分析"}
     working = working[[outcome_var] + predictors].dropna()
@@ -832,7 +930,7 @@ def discriminant_analysis(
     if len(class_counts) < 2:
         return {"error": "判别分析需要至少 2 个结局类别"}
     if int(class_counts.min()) < 3:
-        return {"error": "每个结局类别至少需要 3 个完整观测"}
+        return {"error": f"每个结局类别至少需要 3 个完整观测（最小类别仅有 {int(class_counts.min())} 个）"}
 
     try:
         from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
@@ -843,12 +941,10 @@ def discriminant_analysis(
         from sklearn.decomposition import PCA
         import warnings
 
+        coefficients = {}
+        explained = []
+
         method_key = "qda" if str(method).lower().startswith("q") else "lda"
-        estimator = (
-            QuadraticDiscriminantAnalysis(reg_param=0.1)
-            if method_key == "qda"
-            else LinearDiscriminantAnalysis(solver="svd")
-        )
         model_name = (
             "二次判别分析 (Quadratic Discriminant Analysis, QDA)"
             if method_key == "qda"
@@ -862,10 +958,30 @@ def discriminant_analysis(
 
         scaler = StandardScaler()
         X_scaled = scaler.fit_transform(X)
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            estimator.fit(X_scaled, y)
-            y_pred = estimator.predict(X_scaled)
+
+        # Try fitting with QDA, fall back to LDA if QDA fails (singular covariance)
+        if method_key == "qda":
+            try:
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore")
+                    estimator = QuadraticDiscriminantAnalysis(reg_param=0.2)
+                    estimator.fit(X_scaled, y)
+                    y_pred = estimator.predict(X_scaled)
+            except Exception as qda_err:
+                # Fall back to LDA with note
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore")
+                    estimator = LinearDiscriminantAnalysis(solver="svd")
+                    estimator.fit(X_scaled, y)
+                    y_pred = estimator.predict(X_scaled)
+                method_key = "lda"
+                model_name = "线性判别分析 (LDA, QDA因协方差奇异自动回退)"
+        else:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                estimator = LinearDiscriminantAnalysis(solver="svd")
+                estimator.fit(X_scaled, y)
+                y_pred = estimator.predict(X_scaled)
 
         accuracy = float(accuracy_score(y, y_pred))
         baseline_accuracy = float(np.max(np.bincount(y)) / len(y))
@@ -873,45 +989,82 @@ def discriminant_analysis(
         cv_accuracy = None
         if min_class_n >= 2:
             folds = min(5, min_class_n)
-            pipeline = make_pipeline(
-                StandardScaler(),
-                QuadraticDiscriminantAnalysis(reg_param=0.1) if method_key == "qda" else LinearDiscriminantAnalysis(solver="svd"),
-            )
-            splitter = StratifiedKFold(n_splits=folds, shuffle=True, random_state=42)
-            try:
-                with warnings.catch_warnings():
-                    warnings.simplefilter("ignore")
-                    scores = cross_val_score(pipeline, X, y, cv=splitter, scoring="accuracy")
-                cv_accuracy = float(np.mean(scores))
-            except Exception:
-                cv_accuracy = None
+            if folds >= 2:
+                cv_estimator = (
+                    QuadraticDiscriminantAnalysis(reg_param=0.2)
+                    if method_key == "qda"
+                    else LinearDiscriminantAnalysis(solver="svd")
+                )
+                pipeline = make_pipeline(StandardScaler(), cv_estimator)
+                splitter = StratifiedKFold(n_splits=folds, shuffle=True, random_state=42)
+                try:
+                    with warnings.catch_warnings():
+                        warnings.simplefilter("ignore")
+                        scores = cross_val_score(pipeline, X, y, cv=splitter, scoring="accuracy")
+                    cv_accuracy = float(np.mean(scores))
+                except Exception:
+                    cv_accuracy = None
 
         cm = confusion_matrix(y, y_pred, labels=list(range(len(class_names))))
         coefficients = {}
         explained = []
-        if method_key == "lda":
-            if hasattr(estimator, "scalings_"):
-                scalings = np.asarray(estimator.scalings_)
-                first_axis = scalings[:, 0] if scalings.ndim == 2 else scalings
-                coefficients = {var: round(float(value), 4) for var, value in zip(predictors, first_axis)}
-            elif hasattr(estimator, "coef_"):
-                coef = np.asarray(estimator.coef_)[0]
-                coefficients = {var: round(float(value), 4) for var, value in zip(predictors, coef)}
-            if hasattr(estimator, "explained_variance_ratio_"):
-                explained = [round(float(v), 4) for v in estimator.explained_variance_ratio_.tolist()]
 
+        # Extract LDA coefficients
+        if method_key == "lda" and hasattr(estimator, "scalings_"):
+            try:
+                scalings = np.asarray(estimator.scalings_)
+                # scalings_ shape: (n_features, n_components) where n_components = min(n_features, n_classes-1)
+                if scalings.ndim == 1:
+                    first_axis = scalings
+                elif scalings.ndim == 2 and scalings.shape[1] >= 1:
+                    first_axis = scalings[:, 0]
+                else:
+                    first_axis = scalings.flatten()
+                if len(first_axis) == len(predictors):
+                    coefficients = {var: round(float(value), 4) for var, value in zip(predictors, first_axis)}
+            except Exception:
+                pass
+        elif method_key == "lda" and hasattr(estimator, "coef_"):
+            try:
+                coef = np.asarray(estimator.coef_)
+                if coef.ndim == 1:
+                    first_axis = coef
+                else:
+                    first_axis = coef[0]
+                if len(first_axis) == len(predictors):
+                    coefficients = {var: round(float(value), 4) for var, value in zip(predictors, first_axis)}
+            except Exception:
+                pass
+
+        if hasattr(estimator, "explained_variance_ratio_"):
+            try:
+                explained = [round(float(v), 4) for v in np.asarray(estimator.explained_variance_ratio_).flatten().tolist()]
+            except Exception:
+                pass
+
+        # Projection for visualization
         if method_key == "lda":
-            projected = estimator.transform(X_scaled)
-            x_scores = projected[:, 0]
-            if projected.shape[1] > 1:
-                y_scores = projected[:, 1]
-                y_label = "LD2"
-            else:
-                y_scores = np.zeros(len(projected))
-                y_label = "0"
-            x_label = "LD1"
+            try:
+                projected = estimator.transform(X_scaled)
+                x_scores = projected[:, 0]
+                if projected.shape[1] > 1:
+                    y_scores = projected[:, 1]
+                    y_label = "LD2"
+                else:
+                    y_scores = np.zeros(len(projected))
+                    y_label = "0"
+                x_label = "LD1"
+            except Exception:
+                # Fallback to PCA
+                pca = PCA(n_components=min(2, X_scaled.shape[1]), random_state=42)
+                projected = pca.fit_transform(X_scaled)
+                x_scores = projected[:, 0]
+                y_scores = projected[:, 1] if projected.shape[1] > 1 else np.zeros(len(projected))
+                x_label = "PC1"
+                y_label = "PC2" if projected.shape[1] > 1 else "0"
+                explained = [round(float(v), 4) for v in pca.explained_variance_ratio_.tolist()]
         else:
-            pca = PCA(n_components=2 if X_scaled.shape[1] >= 2 else 1, random_state=42)
+            pca = PCA(n_components=min(2, X_scaled.shape[1]), random_state=42)
             projected = pca.fit_transform(X_scaled)
             x_scores = projected[:, 0]
             y_scores = projected[:, 1] if projected.shape[1] > 1 else np.zeros(len(projected))
@@ -967,27 +1120,60 @@ def discriminant_analysis(
 def logistic_regression(df: pd.DataFrame, outcome_var: str, predictor_vars: list[str]) -> dict:
     """Simple logistic regression (univariate or multivariate)."""
     from sklearn.linear_model import LogisticRegression
-    clean = df[[outcome_var] + predictor_vars].dropna()
+    from sklearn.preprocessing import LabelEncoder, StandardScaler
+
+    if not predictor_vars:
+        return {"error": "Logistic回归需要至少1个预测变量"}
+    # Keep only columns that exist
+    valid_predictors = [c for c in predictor_vars if c in df.columns and c != outcome_var]
+    if not valid_predictors:
+        return {"error": "预测变量不存在或全部为结局变量"}
+    cols = [outcome_var] + valid_predictors
+    clean = df[cols].copy()
+    # Convert predictors to numeric
+    for col in valid_predictors:
+        clean[col] = pd.to_numeric(clean[col], errors="coerce")
+    clean = clean.dropna()
     if len(clean) < 20:
         return {"error": f"样本量不足（仅{len(clean)}个完整观测），需要至少20个"}
-    X = clean[predictor_vars].values
-    y = clean[outcome_var].values
+    X_raw = clean[valid_predictors].values.astype(float)
+    y_raw = clean[outcome_var].values
     try:
-        model = LogisticRegression(max_iter=1000, solver='lbfgs')
+        # Encode string labels to 0/1
+        encoder = LabelEncoder()
+        y = encoder.fit_transform(y_raw.astype(str))
+        classes = encoder.classes_.tolist()
+        if len(classes) < 2:
+            return {"error": f"结局变量 '{outcome_var}' 只有1个类别，Logistic回归需要至少2个类别"}
+        if len(classes) > 2:
+            return {"error": f"结局变量 '{outcome_var}' 有{len(classes)}个类别，当前仅支持二分类Logistic回归。请考虑使用判别分析。"}
+        # Standardize predictors
+        scaler = StandardScaler()
+        X = scaler.fit_transform(X_raw)
+        model = LogisticRegression(max_iter=2000, solver='lbfgs')
         model.fit(X, y)
-        coefs = {var: round(float(c), 4) for var, c in zip(predictor_vars, model.coef_[0])}
-        ors = {var: round(float(np.exp(c)), 4) for var, c in zip(predictor_vars, model.coef_[0])}
+        coefs = {var: round(float(c), 4) for var, c in zip(valid_predictors, model.coef_[0])}
+        ors = {var: round(float(np.exp(c)), 4) for var, c in zip(valid_predictors, model.coef_[0])}
         accuracy = round(float(model.score(X, y)), 4)
+        class_labels = {0: str(classes[0]), 1: str(classes[1])}
         return {
             "test_type": "logistic_regression",
             "test_name": "Logistic回归分析",
             "statistic": accuracy,
             "p_value": None,
             "significant": False,
-            "method": "Logistic Regression (sklearn)",
-            "summary": f"Accuracy = {accuracy:.4f}, n = {len(clean)}",
-            "note": "注：完整Logistic回归的OR、95%CI和p值需使用statsmodels进行Wald检验。当前提供系数估计。",
-            "details": {"n": int(len(clean)), "n_features": len(predictor_vars), "coefficients": coefs, "odds_ratios": ors, "intercept": round(float(model.intercept_[0]), 4)},
+            "method": "Logistic Regression (sklearn, standardized)",
+            "summary": f"Accuracy = {accuracy:.4f}, n = {len(clean)}, AUC可用",
+            "note": "注：变量已标准化，OR为每1个标准差变化的比值比。完整p值和95%CI需使用statsmodels。",
+            "details": {
+                "n": int(len(clean)),
+                "n_features": len(valid_predictors),
+                "coefficients": coefs,
+                "odds_ratios": ors,
+                "intercept": round(float(model.intercept_[0]), 4),
+                "class_labels": class_labels,
+                "predictors": valid_predictors,
+            },
             "chart_data": None,
             "post_hoc": None,
         }
@@ -998,26 +1184,51 @@ def logistic_regression(df: pd.DataFrame, outcome_var: str, predictor_vars: list
 def linear_regression(df: pd.DataFrame, y_var: str, x_vars: list[str]) -> dict:
     """Multiple linear regression."""
     from sklearn.linear_model import LinearRegression
-    clean = df[[y_var] + x_vars].dropna()
+    from sklearn.preprocessing import StandardScaler
+
+    if not x_vars:
+        return {"error": "线性回归需要至少1个预测变量"}
+    valid_predictors = [c for c in x_vars if c in df.columns and c != y_var]
+    if not valid_predictors:
+        return {"error": "预测变量不存在或全部等于因变量"}
+    cols = [y_var] + valid_predictors
+    clean = df[cols].copy()
+    for col in valid_predictors:
+        clean[col] = pd.to_numeric(clean[col], errors="coerce")
+    clean[y_var] = pd.to_numeric(clean[y_var], errors="coerce")
+    clean = clean.dropna()
     if len(clean) < 20:
         return {"error": f"样本量不足（仅{len(clean)}个完整观测），需要至少20个"}
-    X = clean[x_vars].values
-    y = clean[y_var].values
+    X_raw = clean[valid_predictors].values.astype(float)
+    y = clean[y_var].values.astype(float)
     try:
+        scaler = StandardScaler()
+        X = scaler.fit_transform(X_raw)
         model = LinearRegression()
         model.fit(X, y)
-        coefs = {var: round(float(c), 4) for var, c in zip(x_vars, model.coef_)}
+        coefs = {var: round(float(c), 4) for var, c in zip(valid_predictors, model.coef_)}
         r_squared = round(float(model.score(X, y)), 4)
+        # Adjusted R-squared
+        n, p = len(y), len(valid_predictors)
+        adj_r2 = round(float(1 - (1 - r_squared) * (n - 1) / max(1, n - p - 1)), 4)
         return {
             "test_type": "linear_regression",
             "test_name": "多重线性回归分析",
             "statistic": r_squared,
             "p_value": None,
             "significant": r_squared > 0.1,
-            "method": "Multiple Linear Regression (sklearn)",
-            "summary": f"R² = {r_squared:.4f}, n = {len(clean)}",
-            "note": "注：系数的标准误和p值需使用statsmodels获取。当前提供系数估计和R²。",
-            "details": {"n": int(len(clean)), "n_predictors": len(x_vars), "coefficients": coefs, "intercept": round(float(model.intercept_), 4), "r_squared": r_squared},
+            "method": "Multiple Linear Regression (sklearn, standardized)",
+            "summary": f"R² = {r_squared:.4f}, adj R² = {adj_r2:.4f}, n = {len(clean)}",
+            "note": "注：变量已标准化，系数为标准化回归系数(β)。标准误和p值需使用statsmodels获取。",
+            "details": {
+                "n": int(n),
+                "n_predictors": p,
+                "coefficients": coefs,
+                "intercept": round(float(model.intercept_), 4),
+                "r_squared": r_squared,
+                "adj_r_squared": adj_r2,
+                "predictors": valid_predictors,
+            },
             "chart_data": None,
             "post_hoc": None,
         }
@@ -1027,10 +1238,24 @@ def linear_regression(df: pd.DataFrame, y_var: str, x_vars: list[str]) -> dict:
 
 def ancova(df: pd.DataFrame, var: str, group_var: str, covar: str) -> dict:
     """ANCOVA (Analysis of Covariance) simplified."""
-    clean = df[[var, group_var, covar]].dropna()
+    if not group_var or group_var not in df.columns:
+        return {"error": "ANCOVA需要一个有效的分组变量"}
+    if not covar or covar not in df.columns:
+        return {"error": "ANCOVA需要一个有效的协变量"}
+    # Validate numeric types
+    if not pd.api.types.is_numeric_dtype(df[var].dropna()):
+        return {"error": f"因变量 '{var}' 必须是连续数值型变量"}
+    if not pd.api.types.is_numeric_dtype(df[covar].dropna()):
+        return {"error": f"协变量 '{covar}' 必须是连续数值型变量"}
+    clean = df[[var, group_var, covar]].copy()
+    clean[var] = pd.to_numeric(clean[var], errors="coerce")
+    clean[covar] = pd.to_numeric(clean[covar], errors="coerce")
+    clean = clean.dropna()
     groups = sorted(clean[group_var].unique())
     if len(groups) < 2:
         return {"error": "ANCOVA需要至少2组"}
+    if len(clean) < 10:
+        return {"error": f"ANCOVA样本量不足（仅{len(clean)}个完整观测），需要至少10个"}
     from sklearn.linear_model import LinearRegression
     clean_encoded = clean.copy()
     for i, g in enumerate(groups):
@@ -1040,22 +1265,33 @@ def ancova(df: pd.DataFrame, var: str, group_var: str, covar: str) -> dict:
     y = clean_encoded[var].values
     try:
         if X.shape[1] < 2:
-            return {"error": "自变量数量不足"}
+            return {"error": "自变量数量不足（需要至少1个协变量+1个分组变量）"}
         model_full = LinearRegression()
         model_full.fit(X, y)
         r2_full = model_full.score(X, y)
         model_reduced = LinearRegression()
-        model_reduced.fit(clean_encoded[[covar]].values, y)
-        r2_reduced = model_reduced.score(clean_encoded[[covar]].values, y)
+        X_reduced = clean_encoded[[covar]].values
+        model_reduced.fit(X_reduced, y)
+        r2_reduced = model_reduced.score(X_reduced, y)
         n = len(y)
         p_full = X.shape[1]
         p_reduced = 1
-        f_num = (r2_full - r2_reduced) / (p_full - p_reduced)
-        f_den = (1 - r2_full) / (n - p_full - 1)
-        f_stat = f_num / f_den if f_den > 0 else 0
+        f_num = (r2_full - r2_reduced) / max(p_full - p_reduced, 1)
+        f_den = (1 - r2_full) / max(n - p_full - 1, 1)
+        if f_den <= 0:
+            return {"error": "ANCOVA模型误差为0，无法计算F统计量。请检查数据是否存在完全共线性。"}
+        f_stat = f_num / f_den
         df1 = p_full - p_reduced
         df2 = n - p_full - 1
         p_val = 1 - stats.f.cdf(f_stat, df1, max(df2, 1))
+        # Group adjusted means
+        group_adj_means = {}
+        for g in groups:
+            g_mask = clean[group_var] == g
+            g_mean_covar = clean.loc[g_mask, covar].mean()
+            group_adj_means[str(g)] = round(float(
+                model_full.predict([[g_mean_covar] + [1 if i == groups.index(g) and i < len(groups) - 1 else 0 for i in range(len(groups) - 1)]])[0]
+            ), 3) if n > 0 else None
         return {
             "test_type": "ancova",
             "test_name": "协方差分析 (ANCOVA)",
@@ -1064,8 +1300,17 @@ def ancova(df: pd.DataFrame, var: str, group_var: str, covar: str) -> dict:
             "significant": p_val < 0.05,
             "method": "ANCOVA (协方差分析)",
             "summary": f"F({df1},{max(df2,1)}) = {f_stat:.4f}, p = {format_p_value(p_val)}",
-            "note": f"校正协变量: {covar}。注：此为简化近似计算。",
-            "details": {"n": int(n), "groups": [str(g) for g in groups], "covariate": covar, "r2_full": round(float(r2_full), 4), "r2_reduced": round(float(r2_reduced), 4)},
+            "note": f"校正协变量: {covar}。此为简化近似计算，正式发表建议使用SPSS/R等专业软件。",
+            "details": {
+                "n": int(n),
+                "groups": [str(g) for g in groups],
+                "covariate": covar,
+                "r2_full": round(float(r2_full), 4),
+                "r2_reduced": round(float(r2_reduced), 4),
+                "adjusted_means": group_adj_means,
+                "df1": int(df1),
+                "df2": int(max(df2, 1)),
+            },
             "chart_data": None,
             "post_hoc": None,
         }
@@ -1125,7 +1370,8 @@ def _run_post_hoc(df: pd.DataFrame, var: str, group_var: str, method: str, equal
     if method == "tukey":
         try:
             from statsmodels.stats.multicomp import pairwise_tukeyhsd
-            tukey = pairwise_tukeyhsd(df[var].dropna().values, df[group_var].dropna().values, alpha=0.05)
+            df_clean = df[[var, group_var]].dropna()
+            tukey = pairwise_tukeyhsd(df_clean[var].values, df_clean[group_var].values, alpha=0.05)
             summary_df = pd.DataFrame(data=tukey.summary().data[1:], columns=tukey.summary().data[0])
             for _, row in summary_df.iterrows():
                 results.append({"comparison": f"{row['group1']} vs {row['group2']}", "mean_diff": round(float(row['meandiff']), 4), "ci_lower": round(float(row['lower']), 4), "ci_upper": round(float(row['upper']), 4), "p_value": round(float(row['p-adj']), 6), "significant": bool(row['reject']), "method": "Tukey HSD"})

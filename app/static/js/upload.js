@@ -1,14 +1,22 @@
 /* ── File Upload Module ────────────────────────────────── */
 
+function initUpload() {
+  // No-op: upload initialized in app.js initFileInputs()
+}
+
 let _uploadAbortController = null;
 
 async function handleFile(file, options = {}) {
   const uploadBtn = el('uploadDataBtn');
-  if (_uploadAbortController) { _uploadAbortController.abort(); }
-  _uploadAbortController = new AbortController();
-  const timeoutId = setTimeout(() => _uploadAbortController.abort(), 120000);
 
-  setStatus('正在读取文件...');
+  // Cancel any in-flight upload
+  if (_uploadAbortController) {
+    _uploadAbortController.abort();
+  }
+  _uploadAbortController = new AbortController();
+  const timeoutId = setTimeout(() => _uploadAbortController.abort(), 120000); // 2 min timeout
+
+  if (typeof setStatus === 'function') setStatus('正在读取文件...');
   if (uploadBtn) setLoading(uploadBtn, true);
 
   const formData = new FormData();
@@ -16,12 +24,14 @@ async function handleFile(file, options = {}) {
 
   try {
     if (options.fromChart) toast(`正在读取 ${file.name}...`, 'info');
+
     const res = await fetch('/api/upload', {
       method: 'POST',
       body: formData,
       signal: _uploadAbortController.signal,
     });
     clearTimeout(timeoutId);
+
     if (!res.ok) {
       const err = await res.json().catch(() => ({ detail: 'Upload failed' }));
       throw new Error(err.detail || `HTTP ${res.status}`);
@@ -29,23 +39,28 @@ async function handleFile(file, options = {}) {
     const data = await res.json();
     updateStateFromData(data);
     STATE.datasetName = null;
-    setStatus(`文件 "${data.filename}" 已解析`);
+
+    if (typeof setStatus === 'function') setStatus(`文件 "${data.filename}" 已解析`);
     toast('数据上传成功！', 'success');
 
     if (data.sheet_names && data.sheet_names.length > 1) {
       renderSheetSelector(data.sheet_names);
     }
 
-    updateMetricGrid();
-    updatePreviewTable();
-    updateDatasetMeta();
-    updateDownloadList();
-    buildVarControls();
-    updateFlowLine(2);
+    // Update UI panels
+    if (typeof updateMetricGrid === 'function') updateMetricGrid();
+    if (typeof updatePreviewTable === 'function') updatePreviewTable();
+    if (typeof updateDatasetMeta === 'function') updateDatasetMeta();
+    if (typeof updateDownloadList === 'function') updateDownloadList();
+    if (typeof renderDataPanel === 'function') renderDataPanel();
+    if (typeof buildChartVarControls === 'function') buildChartVarControls();
+    if (typeof renderAppearanceControls === 'function') renderAppearanceControls();
+    if (typeof updateFlowLine === 'function') updateFlowLine(2);
+    if (typeof activateWorkspaceTab === 'function') activateWorkspaceTab('overview');
   } catch (err) {
     clearTimeout(timeoutId);
     const msg = err.name === 'AbortError' ? '上传超时，请尝试较小的文件' : '上传失败: ' + err.message;
-    setStatus(msg, true);
+    if (typeof setStatus === 'function') setStatus(msg, true);
     toast(msg, 'error');
   } finally {
     if (uploadBtn) setLoading(uploadBtn, false);
@@ -66,7 +81,7 @@ function updateStateFromData(data) {
   STATE.colCount = data.col_count;
   STATE.previewRows = data.preview || [];
   STATE.summary = data.summary || {};
-  saveActiveTestWorkspace();
+  saveActiveChartWorkspace();
 }
 
 function renderSheetSelector(sheets) {
@@ -77,17 +92,21 @@ function renderSheetSelector(sheets) {
   if (!sheetSelect) return;
   sheetSelect.innerHTML = sheets.map(s => `<option value="${s}">${s}</option>`).join('');
   sheetSelect.value = STATE.activeSheet || sheets[0];
+
+  // Bind change handler
   const newSelect = sheetSelect.cloneNode(true);
   sheetSelect.parentNode.replaceChild(newSelect, sheetSelect);
   newSelect.addEventListener('change', async () => {
     const sheet = newSelect.value;
-    setStatus('切换工作表中...');
+    if (typeof setStatus === 'function') setStatus('切换工作表中...');
     try {
       const data = await apiPost('/api/read-sheet', { upload_id: STATE.uploadId, sheet_name: sheet });
       updateStateFromData({ ...data, sheet_name: sheet, filename: STATE.fileName, file_type: STATE.fileType, sheet_names: STATE.sheetNames });
-      updateMetricGrid();
-      updatePreviewTable();
-      buildVarControls();
+      if (typeof updateMetricGrid === 'function') updateMetricGrid();
+      if (typeof updatePreviewTable === 'function') updatePreviewTable();
+      if (typeof buildChartVarControls === 'function') buildChartVarControls();
+      if (typeof renderAppearanceControls === 'function') renderAppearanceControls();
+      if (typeof renderDataPanel === 'function') renderDataPanel();
       toast(`已切换到工作表: ${sheet}`, 'success');
     } catch (e) {
       toast('切换失败: ' + e.message, 'error');
@@ -113,14 +132,18 @@ async function loadExampleDataset(name, options = {}) {
     const data = await res.json();
     updateStateFromData({ ...data, upload_id: null, filename: data.filename, file_type: '.csv' });
     STATE.datasetName = name;
-    saveActiveTestWorkspace();
+    saveActiveChartWorkspace();
 
-    updateMetricGrid();
-    updatePreviewTable();
-    updateDatasetMeta();
-    updateDownloadList();
-    buildVarControls();
-    updateFlowLine(2);
+    if (typeof updateMetricGrid === 'function') updateMetricGrid();
+    if (typeof updatePreviewTable === 'function') updatePreviewTable();
+    if (typeof updateDatasetMeta === 'function') updateDatasetMeta();
+    if (typeof updateDownloadList === 'function') updateDownloadList();
+    if (typeof buildChartVarControls === 'function') buildChartVarControls();
+    if (typeof renderAppearanceControls === 'function') renderAppearanceControls();
+    if (typeof updateFlowLine === 'function') updateFlowLine(2);
+    if (typeof activateWorkspaceTab === 'function') activateWorkspaceTab('overview');
+    // Note: renderDataPanel() is NOT called here — callers must invoke it after
+    // the button has been restored, otherwise cloneNode captures the "处理中..." state
 
     if (!options.silent) toast('示例数据加载成功！', 'success');
     return data;

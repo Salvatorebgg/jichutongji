@@ -6,7 +6,7 @@
 
 - **后端**：Python FastAPI，负责上传、读取、变量识别、统计检验、结果表格和导出。
 - **前端**：HTML / CSS / JavaScript，无前端框架依赖。
-- **统计检验**：9种常用临床统计检验方法，集中在 `app/services/stats_service.py`。
+- **统计检验**：20+种常用临床统计检验方法，集中在 `app/services/stats_service.py`。
 - **图形**：本地 Plotly.js，统计图形渲染在 `app/static/js/analysis.js` 中处理。
 - **数据链路**：先选检验方法，再加载对应示例或上传数据；分析通过 `/api/analyze` 执行。
 
@@ -189,6 +189,6 @@ CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "
 ## 注意事项
 
 - 前端默认加载本地 `app/static/vendor/plotly.min.js`，避免CDN失败导致图形渲染不可用。
-- 统计分析通过 `/api/analyze` 统一执行，结果包含 `result`、`tables.result`、`tables.group_stats`、`tables.post_hoc`。
+- 统计分析通过 `/api/analyze` 统一执行，结果包含 `result`、`discussion`、`tables.result`、`tables.group_stats`、`tables.post_hoc`。
 - CSV/TSV文件自动识别编码（UTF-8/GB18030/Latin1等），Excel支持 .xlsx/.xls 多工作表。
 - 新增统计检验方法时必须同时维护示例数据生成函数和 `TEST_CATALOG` 配置。

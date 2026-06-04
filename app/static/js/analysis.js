@@ -1,62 +1,335 @@
 /* ── Statistical Analysis Module ───────────────────────── */
-/* Handles: analysis execution, result rendering, chart visualization */
+/* Integrated with Basicpicture chart system for publication-quality visualization */
 
+/* ── Statistical Test Catalog ─────────────────────────── */
+const TEST_CATALOG = {
+  t_test_independent: {
+    id: 't_test_independent',
+    name: '独立样本t检验',
+    category: 'parametric',
+    icon: 'T₂',
+    description: "Welch's t-test — 比较两组独立样本的均值差异",
+    exampleDataset: 't_test_independent_example',
+    requiresGroup: true,
+    requiresPaired: false,
+    varType: 'continuous',
+  },
+  t_test_paired: {
+    id: 't_test_paired',
+    name: '配对样本t检验',
+    category: 'parametric',
+    icon: 'Tp',
+    description: 'Paired t-test — 比较同一组对象前后测量的差异',
+    exampleDataset: 't_test_paired_example',
+    requiresGroup: false,
+    requiresPaired: true,
+    varType: 'continuous',
+  },
+  one_sample_t_test: {
+    id: 'one_sample_t_test',
+    name: '单样本t检验',
+    category: 'parametric',
+    icon: 'T1',
+    description: 'One-sample t-test — 检验单个连续变量均值是否偏离参考值',
+    exampleDataset: 'one_sample_t_test_example',
+    requiresGroup: false,
+    requiresPaired: false,
+    varType: 'continuous',
+  },
+  normality_test: {
+    id: 'normality_test',
+    name: '正态性检验',
+    category: 'parametric',
+    icon: 'W',
+    description: 'Shapiro-Wilk — 判断连续变量分布是否显著偏离正态',
+    exampleDataset: 'normality_test_example',
+    requiresGroup: false,
+    requiresPaired: false,
+    varType: 'continuous',
+  },
+  levene_test: {
+    id: 'levene_test',
+    name: '方差齐性检验',
+    category: 'parametric',
+    icon: 'Lv',
+    description: 'Levene / Brown-Forsythe — 比较多组连续变量的方差是否齐性',
+    exampleDataset: 'levene_test_example',
+    requiresGroup: true,
+    requiresPaired: false,
+    varType: 'continuous',
+  },
+  anova: {
+    id: 'anova',
+    name: '单因素方差分析',
+    category: 'parametric',
+    icon: 'Fa',
+    description: 'One-way ANOVA — 比较三组及以上样本的均值差异',
+    exampleDataset: 'anova_example',
+    requiresGroup: true,
+    requiresPaired: false,
+    supportsPostHoc: true,
+    varType: 'continuous',
+  },
+  chi_square: {
+    id: 'chi_square',
+    name: '卡方检验',
+    category: 'categorical',
+    icon: 'χ²',
+    description: 'Chi-square test — 分析两个分类变量间的关联性',
+    exampleDataset: 'chi_square_example',
+    requiresGroup: true,
+    requiresPaired: false,
+    varType: 'categorical',
+  },
+  fisher_exact: {
+    id: 'fisher_exact',
+    name: 'Fisher精确概率法',
+    category: 'categorical',
+    icon: 'Fe',
+    description: "Fisher's exact test — 小样本或低频数的2x2列联表精确检验",
+    exampleDataset: 'fisher_exact_example',
+    requiresGroup: true,
+    requiresPaired: false,
+    varType: 'categorical',
+  },
+  mann_whitney: {
+    id: 'mann_whitney',
+    name: 'Mann-Whitney U检验',
+    category: 'nonparametric',
+    icon: 'Uw',
+    description: 'Wilcoxon秩和检验 — 两组独立样本的非参数比较',
+    exampleDataset: 'mann_whitney_example',
+    requiresGroup: true,
+    requiresPaired: false,
+    varType: 'continuous',
+  },
+  kruskal_wallis: {
+    id: 'kruskal_wallis',
+    name: 'Kruskal-Wallis H检验',
+    category: 'nonparametric',
+    icon: 'Kw',
+    description: 'Kruskal-Wallis — 多组独立样本的非参数比较',
+    exampleDataset: 'kruskal_wallis_example',
+    requiresGroup: true,
+    requiresPaired: false,
+    supportsPostHoc: true,
+    varType: 'continuous',
+  },
+  wilcoxon_signed_rank: {
+    id: 'wilcoxon_signed_rank',
+    name: 'Wilcoxon符号秩检验',
+    category: 'nonparametric',
+    icon: 'Ws',
+    description: 'Wilcoxon signed-rank — 配对样本的非参数比较',
+    exampleDataset: 'wilcoxon_signed_rank_example',
+    requiresGroup: false,
+    requiresPaired: true,
+    varType: 'continuous',
+  },
+  mcnemar: {
+    id: 'mcnemar',
+    name: 'McNemar检验',
+    category: 'categorical',
+    icon: 'Mb',
+    description: "McNemar's test — 配对分类资料的比较",
+    exampleDataset: 'mcnemar_example',
+    requiresGroup: false,
+    requiresPaired: true,
+    varType: 'categorical',
+  },
+  friedman: {
+    id: 'friedman',
+    name: 'Friedman检验',
+    category: 'nonparametric',
+    icon: 'Fm',
+    description: 'Friedman test — 非参数重复测量方差分析',
+    exampleDataset: 'friedman_example',
+    requiresGroup: true,
+    requiresPaired: false,
+    requiresSubject: true,
+    varType: 'continuous',
+  },
+  repeated_measures_anova: {
+    id: 'repeated_measures_anova',
+    name: '重复测量方差分析',
+    category: 'parametric',
+    icon: 'Rm',
+    description: 'RM ANOVA — 同一组对象在不同时间点的重复测量',
+    exampleDataset: 'repeated_measures_example',
+    requiresGroup: true,
+    requiresPaired: false,
+    requiresSubject: true,
+    varType: 'continuous',
+  },
+  pearson_correlation: {
+    id: 'pearson_correlation',
+    name: 'Pearson相关分析',
+    category: 'correlation',
+    icon: 'Pr',
+    description: 'Pearson r — 两连续变量的线性相关分析',
+    exampleDataset: 'correlation_example',
+    requiresGroup: false,
+    requiresPaired: true,
+    requiresPairedLabel: '变量2',
+    varType: 'continuous',
+  },
+  spearman_correlation: {
+    id: 'spearman_correlation',
+    name: 'Spearman秩相关',
+    category: 'correlation',
+    icon: 'Sp',
+    description: "Spearman's ρ — 两变量的秩相关（非参数）",
+    exampleDataset: 'correlation_example',
+    requiresGroup: false,
+    requiresPaired: true,
+    requiresPairedLabel: '变量2',
+    varType: 'continuous',
+  },
+  log_rank: {
+    id: 'log_rank',
+    name: 'Log-Rank生存分析',
+    category: 'survival',
+    icon: 'Lr',
+    description: 'Log-rank test — 两组或多组生存曲线比较',
+    exampleDataset: 'survival_example',
+    requiresGroup: true,
+    requiresPaired: false,
+    requiresTimeEvent: true,
+    varType: 'continuous',
+  },
+  logistic_regression: {
+    id: 'logistic_regression',
+    name: 'Logistic回归',
+    category: 'regression',
+    icon: 'Lg',
+    description: 'Logistic Regression — 二分类结局的回归分析',
+    exampleDataset: 'logistic_regression_example',
+    requiresGroup: false,
+    requiresPaired: false,
+    requiresMultiVar: true,
+    varType: 'categorical',
+  },
+  linear_regression: {
+    id: 'linear_regression',
+    name: '多重线性回归',
+    category: 'regression',
+    icon: 'Ln',
+    description: 'Multiple Linear Regression — 多因素线性回归',
+    exampleDataset: 'linear_regression_example',
+    requiresGroup: false,
+    requiresPaired: false,
+    requiresMultiVar: true,
+    varType: 'continuous',
+  },
+  discriminant_analysis: {
+    id: 'discriminant_analysis',
+    name: '线性判别分析',
+    category: 'regression',
+    icon: 'LD',
+    description: 'LDA — 基于多项连续指标判别分类结局，并输出判别得分图',
+    exampleDataset: 'discriminant_analysis_example',
+    requiresGroup: false,
+    requiresPaired: false,
+    requiresMultiVar: true,
+    varType: 'categorical',
+  },
+  quadratic_discriminant_analysis: {
+    id: 'quadratic_discriminant_analysis',
+    name: '二次判别分析',
+    category: 'regression',
+    icon: 'QD',
+    description: 'QDA — 允许不同类别协方差结构的判别分类模型',
+    exampleDataset: 'discriminant_analysis_example',
+    requiresGroup: false,
+    requiresPaired: false,
+    requiresMultiVar: true,
+    varType: 'categorical',
+  },
+  ancova: {
+    id: 'ancova',
+    name: '协方差分析',
+    category: 'parametric',
+    icon: 'Ac',
+    description: 'ANCOVA — 控制协变量后的组间比较',
+    exampleDataset: 'ancova_example',
+    requiresGroup: true,
+    requiresPaired: false,
+    requiresCovariate: true,
+    varType: 'continuous',
+  },
+};
+
+function getTestConfig(testId) {
+  return TEST_CATALOG[testId] || null;
+}
+
+/* ── Statistical Analysis Execution ───────────────────── */
 async function runAnalysis() {
-  const config = getTestConfig(STATE.activeTestType);
-  if (!config) { toast('请先选择检验方法', 'info'); return; }
-  if (!STATE.columns || STATE.columns.length === 0) { toast('请先载入数据', 'warning'); return; }
+  const config = getTestConfig(STATE.activeChartType);
+  if (!config && !(STATE.activeChartType && TEST_CATALOG[STATE.activeChartType])) {
+    // Not a statistical test, use chart generation
+    return;
+  }
+  const testConfig = config || getTestConfig(STATE.activeChartType);
+  if (!testConfig) return;
 
-  const btn = el('runAnalysisBtn');
-  setLoading(btn, true);
-  setStatus('正在执行统计分析...');
+  if (!STATE.columns || STATE.columns.length === 0) {
+    toast('请先载入数据', 'warning');
+    return;
+  }
+
+  const btn = el('generateChartBtn');
+  if (btn) setLoading(btn, true);
+  if (typeof setStatus === 'function') setStatus('正在执行统计分析...');
 
   try {
-    const body = buildAnalysisRequest(config);
+    const body = buildAnalysisRequest(testConfig);
     const data = await apiPost('/api/analyze', body);
 
     if (data.status === 'error') {
       toast(data.message || '分析失败', 'error');
-      setStatus(data.message || '分析失败', true);
-      renderErrorResult(data.message);
+      if (typeof setStatus === 'function') setStatus(data.message || '分析失败', true);
       return;
     }
 
-    STATE.currentResult = data.result;
+    STATE.currentStatResult = data.result;
+    STATE.currentResult = data.result;  // for app.js compatibility
     STATE.currentDiscussion = data.discussion || null;
-    STATE.currentTables = data.tables || null;
-    STATE.currentTableData = data.tables?.result?.rows || [];
+    STATE.currentTableData = data.tables?.result || null;  // full table object with columns + rows
+    STATE.currentStatTables = data.tables || null;
 
-    renderAnalysisResult(data);
-    renderResultTables(data.tables);
-    updateChartTab(data.result);
-
-    const badge = el('resultBadge');
-    if (badge) {
-      badge.textContent = data.result.p_value == null
-        ? (data.result.significant ? '性能较好' : '模型指标')
-        : (data.result.significant ? 'p < 0.05' : 'p >= 0.05');
-      badge.className = 'badge ' + (data.result.significant ? 'warning' : 'success');
+    // Load full dataset for chart visualization
+    try {
+      if (typeof loadChartDataset === 'function') {
+        const fullData = await loadChartDataset(testConfig);
+        STATE._statChartData = fullData;
+      } else {
+        STATE._statChartData = null;
+      }
+    } catch(e) {
+      STATE._statChartData = null;
     }
 
-    const exportBar = el('analysisExportBar');
-    if (exportBar) exportBar.style.display = 'flex';
-
+    // Render results in analysis tab
+    renderStatResults(data);
     updateDownloadList();
-    updateFlowLine(4);
-    setStatus(`分析完成: ${data.result.summary || data.result.test_name}`);
+
+    if (typeof updateFlowLine === 'function') updateFlowLine(4);
+    if (typeof setStatus === 'function') setStatus(`分析完成: ${data.result.summary || data.result.test_name}`);
     toast('统计分析完成！', 'success');
   } catch (e) {
     toast('分析失败: ' + e.message, 'error');
-    setStatus('分析失败: ' + e.message, true);
+    if (typeof setStatus === 'function') setStatus('分析失败: ' + e.message, true);
   } finally {
-    setLoading(btn, false);
+    if (btn) setLoading(btn, false);
   }
 }
 
 function buildAnalysisRequest(config) {
+  const params = typeof collectChartParams === 'function' ? collectChartParams() : {};
   const body = {
-    test_type: STATE.activeTestType,
-    var: el('varSelect')?.value || '',
+    test_type: STATE.activeChartType,
+    var: params.var || params.y_var || '',
     use_demo: !STATE.uploadId,
     dataset_name: STATE.datasetName || 'general_clinical_example',
     upload_id: STATE.uploadId || null,
@@ -64,146 +337,153 @@ function buildAnalysisRequest(config) {
   };
 
   if (config.requiresGroup) {
-    body.group_var = el('groupVarSelect')?.value || '';
+    body.group_var = params.group_var || params.x_var || '';
   }
   if (config.requiresPaired) {
-    body.paired_var = el('pairedVarSelect')?.value || '';
+    body.paired_var = params.paired_var || params.end_var || params.var2 || '';
   }
   if (config.supportsPostHoc) {
     body.post_hoc = STATE.postHocMethod || null;
   }
   if (config.requiresSubject) {
-    body.subject_var = el('subjectVarSelect')?.value || '';
+    body.subject_var = params.subject_var || '';
   }
   if (config.requiresTimeEvent) {
-    body.time_var = el('timeVarSelect')?.value || '';
-    body.event_var = el('eventVarSelect')?.value || '';
+    body.time_var = params.time_var || params.x_var || '';
+    body.event_var = params.event_var || '';
   }
   if (config.requiresCovariate) {
-    body.covar = el('covarSelect')?.value || '';
+    body.covar = params.covar || '';
   }
   if (config.requiresMultiVar) {
-    const xVarsSelect = el('xVarsSelect');
-    body.x_vars = xVarsSelect ? Array.from(xVarsSelect.selectedOptions || []).map(o => o.value) : [];
+    body.x_vars = params.value_vars || params.x_vars || [];
   }
 
   return body;
 }
 
-/* ── Result Rendering ─────────────────────────────────── */
-function renderAnalysisResult(data) {
-  const container = el('resultSummary');
-  if (!container) return;
+/* ── Statistical Result Rendering ─────────────────────── */
+function renderStatResults(data) {
   const r = data.result;
+  const tables = data.tables || {};
 
-  if (r.error) {
-    container.innerHTML = `<div class="result-note">${escapeHtml(r.error)}</div>`;
-    return;
-  }
+  // Render summary into resultSummary
+  const summaryContainer = el('resultSummary');
+  if (summaryContainer) {
+    let html = '';
 
-  let html = '<div class="result-line">';
-  html += `<span class="result-label">检验方法</span><span class="result-value">${escapeHtml(r.test_name || '')}</span>`;
-  html += '</div>';
+    // Key result summary cards
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:16px;">';
 
-  html += '<div class="result-line">';
-  html += `<span class="result-label">统计量</span><span class="result-value">${r.statistic != null ? r.statistic : '—'}</span>`;
-  html += '</div>';
-
-  html += '<div class="result-line">';
-  const pClass = r.significant ? 'p-significant' : 'p-ns';
-  html += `<span class="result-label">P值</span><span class="result-value ${pClass}">${formatPValueDisplay(r.p_value)}</span>`;
-  html += '</div>';
-
-  html += '<div class="result-line">';
-  const conclusion = r.p_value == null
-    ? (r.significant ? '模型性能高于类别基线，建议进一步验证' : '当前结果主要作为模型性能描述')
-    : (r.significant ? '差异有统计学意义 (p < 0.05)' : '差异无统计学意义 (p >= 0.05)');
-  html += `<span class="result-label">结论</span><span class="result-value">${conclusion}</span>`;
-  html += '</div>';
-
-  html += '<div class="result-line">';
-  html += `<span class="result-label">方法</span><span class="result-value" style="font-size:12px;">${escapeHtml(r.method || '')}</span>`;
-  html += '</div>';
-
-  if (r.note) {
-    html += `<div class="result-note">${escapeHtml(r.note)}</div>`;
-  }
-
-  // Show details based on test type
-  if (r.details) {
-    html += '<div style="margin-top:10px;">';
-    html += renderTestDetails(r);
+    if (r.statistic != null) {
+      html += `<div class="summary-card"><span>统计量</span><strong>${typeof r.statistic === 'number' ? r.statistic.toFixed(4) : r.statistic}</strong><small>${r.method || ''}</small></div>`;
+    }
+    if (r.p_value != null) {
+      const pClass = r.significant ? 'color:var(--rose);' : 'color:var(--teal);';
+      html += `<div class="summary-card"><span>P值</span><strong style="${pClass}">${formatPValueDisplay(r.p_value)}</strong><small>${r.significant ? 'p < 0.05 显著' : 'p ≥ 0.05 不显著'}</small></div>`;
+    }
+    html += `<div class="summary-card"><span>结论</span><strong style="font-size:14px;">${r.significant ? '有统计学意义' : (r.p_value == null ? (r.significant ? '性能较好' : '参考') : '无统计学意义')}</strong><small>${escapeHtml(r.summary || '')}</small></div>`;
     html += '</div>';
+
+    // Details
+    if (r.details) {
+      html += `<div style="margin-bottom:12px;padding:10px 14px;background:rgba(0,0,0,0.02);border-radius:8px;">${renderTestDetails(r)}</div>`;
+    }
+
+    // Discussion
+    if (data.discussion) {
+      html += renderDiscussionBlock(data.discussion);
+    }
+
+    summaryContainer.innerHTML = html;
   }
 
-  if (data.discussion) {
-    html += renderDiscussionBlock(data.discussion);
+  // Render tables into their containers
+  const resultTableContainer = el('resultTableContainer');
+  if (resultTableContainer) {
+    resultTableContainer.innerHTML = tables.result
+      ? `<h4 style="margin:0 0 6px;">结果表</h4>${renderStatThreeLineTable(tables.result)}`
+      : '';
   }
 
-  container.innerHTML = html;
+  const groupContainer = el('groupStatsContainer');
+  if (groupContainer) {
+    groupContainer.innerHTML = tables.group_stats
+      ? `<h4 style="margin:0 0 6px;">分组描述统计</h4>${renderStatThreeLineTable(tables.group_stats)}`
+      : '';
+  }
+
+  const postContainer = el('postHocContainer');
+  if (postContainer) {
+    postContainer.innerHTML = tables.post_hoc
+      ? `<h4 style="margin:0 0 6px;">事后两两比较</h4>${renderStatThreeLineTable(tables.post_hoc)}`
+      : '';
+  }
+
+  // Also render chart in the chart tab using the loaded dataset
+  const chartContainer = el('chartPreviewContainer');
+  if (chartContainer && r.test_name) {
+    renderStatChart(r, data.result || {});
+  }
+
+  // Update chart preview title to match statistical result
+  const previewTitle = el('chartPreviewTitle');
+  if (previewTitle && r.test_name) {
+    previewTitle.textContent = `${r.test_name} — 统计图形`;
+  }
+
+  // Update badge
+  const badge = el('chartPreviewBadge');
+  if (badge) {
+    badge.textContent = r.p_value == null
+      ? (r.significant ? '性能较好' : '模型指标')
+      : (r.significant ? 'p < 0.05' : 'p ≥ 0.05');
+    badge.style.display = 'inline-block';
+  }
+
+  // Show export bars
+  const analysisExportBar = el('analysisExportBar');
+  if (analysisExportBar) analysisExportBar.style.display = 'flex';
+  const chartExportBar = el('chartExportBar');
+  if (chartExportBar) chartExportBar.style.display = 'flex';
+
+  if (typeof activateWorkspaceTab === 'function') activateWorkspaceTab('analysis');
 }
 
-function applyDefaultVarSelections(config) {
-  const defaults = {
-    t_test_independent: { varSelect: 'sbp_reduction', groupVarSelect: 'group' },
-    t_test_paired: { varSelect: 'sbp_before', pairedVarSelect: 'sbp_after' },
-    one_sample_t_test: { varSelect: 'ldl_change' },
-    normality_test: { varSelect: 'biomarker' },
-    levene_test: { varSelect: 'response_value', groupVarSelect: 'group' },
-    anova: { varSelect: 'efficacy_score', groupVarSelect: 'treatment' },
-    repeated_measures_anova: { varSelect: 'sbp', groupVarSelect: 'time', subjectVarSelect: 'subject_id' },
-    ancova: { varSelect: 'sbp_followup', groupVarSelect: 'treatment', covarSelect: 'sbp_baseline' },
-    mann_whitney: { varSelect: 'crp_level', groupVarSelect: 'group' },
-    kruskal_wallis: { varSelect: 'biomarker_level', groupVarSelect: 'disease_stage' },
-    wilcoxon_signed_rank: { varSelect: 'pain_before', pairedVarSelect: 'pain_after' },
-    friedman: { varSelect: 'pain_score', groupVarSelect: 'timepoint', subjectVarSelect: 'subject_id' },
-    chi_square: { varSelect: 'outcome', groupVarSelect: 'treatment' },
-    fisher_exact: { varSelect: 'outcome', groupVarSelect: 'group' },
-    mcnemar: { varSelect: 'diagnosis_standard', pairedVarSelect: 'diagnosis_new' },
-    pearson_correlation: { varSelect: 'age', pairedVarSelect: 'bmi' },
-    spearman_correlation: { varSelect: 'glucose', pairedVarSelect: 'crp' },
-    log_rank: { varSelect: 'survival_time', groupVarSelect: 'treatment', timeVarSelect: 'survival_time', eventVarSelect: 'event' },
-    logistic_regression: { varSelect: 'outcome', xVarsSelect: ['age', 'bmi', 'glucose', 'cholesterol'] },
-    linear_regression: { varSelect: 'sbp', xVarsSelect: ['age', 'bmi', 'glucose', 'cholesterol'] },
-    discriminant_analysis: { varSelect: 'diagnosis_group', xVarsSelect: ['age', 'bmi', 'sbp', 'glucose', 'cholesterol', 'crp'] },
-    quadratic_discriminant_analysis: { varSelect: 'diagnosis_group', xVarsSelect: ['age', 'bmi', 'sbp', 'glucose', 'cholesterol', 'crp'] },
-  }[config?.id] || {};
-
-  Object.entries(defaults).forEach(([id, value]) => {
-    const select = el(id);
-    if (!select) return;
-    if (Array.isArray(value)) {
-      Array.from(select.options || []).forEach(option => {
-        option.selected = value.includes(option.value);
-      });
-      if (!Array.from(select.selectedOptions || []).length) {
-        Array.from(select.options || []).slice(0, Math.min(4, select.options.length)).forEach(option => {
-          if (option.value) option.selected = true;
-        });
-      }
-    } else if (Array.from(select.options || []).some(option => option.value === value)) {
-      select.value = value;
-    } else {
-      const firstRealOption = Array.from(select.options || []).find(option => option.value);
-      if (firstRealOption) select.value = firstRealOption.value;
-    }
+function renderStatThreeLineTable(tableData) {
+  if (!tableData || !tableData.columns || !tableData.rows) return '';
+  const { columns, rows, title } = tableData;
+  let html = '<div class="compact-table-wrap"><table class="three-line">';
+  if (title) html += `<caption>${escapeHtml(title)}</caption>`;
+  html += '<thead><tr>';
+  columns.forEach(c => { html += `<th>${escapeHtml(String(c))}</th>`; });
+  html += '</tr></thead><tbody>';
+  (rows || []).forEach(row => {
+    html += '<tr>';
+    columns.forEach(c => {
+      const v = row[c] !== undefined && row[c] !== null ? row[c] : '—';
+      html += `<td>${escapeHtml(String(v))}</td>`;
+    });
+    html += '</tr>';
   });
+  html += '</tbody></table></div>';
+  return html;
 }
 
 function renderDiscussionBlock(discussion) {
   if (!discussion) return '';
-  let html = '<div class="result-discussion">';
+  let html = '<div style="margin-top:10px;padding:12px 14px;border:1px solid var(--line);border-radius:8px;background:rgba(0,0,0,0.01);">';
   if (discussion.headline) {
-    html += `<div class="discussion-headline">${escapeHtml(discussion.headline)}</div>`;
+    html += `<div style="font-weight:700;color:var(--ink);margin-bottom:8px;">${escapeHtml(discussion.headline)}</div>`;
   }
   (discussion.sections || []).forEach(section => {
-    html += '<section class="discussion-section">';
-    html += `<h4>${escapeHtml(section.title || '')}</h4>`;
-    html += '<ul>';
+    html += '<div style="margin-bottom:8px;">';
+    html += `<span style="font-weight:650;color:var(--text);">${escapeHtml(section.title || '')}</span>`;
+    html += '<ul style="margin:4px 0 0;padding-left:18px;">';
     (section.items || []).forEach(item => {
-      html += `<li>${escapeHtml(item)}</li>`;
+      html += `<li style="font-size:12px;color:var(--muted);">${escapeHtml(item)}</li>`;
     });
-    html += '</ul></section>';
+    html += '</ul></div>';
   });
   html += '</div>';
   return html;
@@ -211,18 +491,16 @@ function renderDiscussionBlock(discussion) {
 
 function renderTestDetails(r) {
   let html = '';
-  const d = r.details;
+  const d = r.details || {};
   const tt = r.test_type;
 
   if (tt === 't_test_independent') {
     html += `<p style="margin:4px 0;font-size:12px;color:var(--muted);">${d.group_1?.name}: n=${d.group_1?.n}, Mean=${d.group_1?.mean}, SD=${d.group_1?.std}</p>`;
     html += `<p style="margin:4px 0;font-size:12px;color:var(--muted);">${d.group_2?.name}: n=${d.group_2?.n}, Mean=${d.group_2?.mean}, SD=${d.group_2?.std}</p>`;
-    html += `<p style="margin:4px 0;font-size:12px;color:var(--muted);">均值差: ${d.mean_diff}</p>`;
+    html += `<p style="margin:4px 0;font-size:12px;color:var(--muted);">均值差: ${d.mean_diff}, 95%CI=${(d.ci_95 || []).join(', ')}</p>`;
   } else if (tt === 't_test_paired') {
-    html += `<p style="margin:4px 0;font-size:12px;color:var(--muted);">配对: ${d.n_pairs}对</p>`;
-    html += `<p style="margin:4px 0;font-size:12px;color:var(--muted);">干预前: Mean=${d.mean_before}, SD=${d.std_before}</p>`;
-    html += `<p style="margin:4px 0;font-size:12px;color:var(--muted);">干预后: Mean=${d.mean_after}, SD=${d.std_after}</p>`;
-    html += `<p style="margin:4px 0;font-size:12px;color:var(--muted);">均值差: ${d.mean_diff} ± ${d.std_diff}</p>`;
+    html += `<p style="margin:4px 0;font-size:12px;color:var(--muted);">配对: ${d.n_pairs}对, 干预前: Mean=${d.mean_before}, SD=${d.std_before}</p>`;
+    html += `<p style="margin:4px 0;font-size:12px;color:var(--muted);">干预后: Mean=${d.mean_after}, SD=${d.std_after}, 均值差: ${d.mean_diff} ± ${d.std_diff}</p>`;
   } else if (tt === 'one_sample_t_test') {
     html += `<p style="margin:4px 0;font-size:12px;color:var(--muted);">n=${d.n}, Mean=${d.mean}, SD=${d.std}, 参考均值=${d.hypothesized_mean}</p>`;
     html += `<p style="margin:4px 0;font-size:12px;color:var(--muted);">均值差=${d.mean_diff}, 95%CI=[${(d.ci_95 || []).join(', ')}]</p>`;
@@ -285,525 +563,10 @@ function renderTestDetails(r) {
   } else if (tt === 'discriminant_analysis' || tt === 'quadratic_discriminant_analysis') {
     html += `<p style="margin:4px 0;font-size:12px;color:var(--muted);">n = ${d.n}, 类别数 = ${d.n_classes}, 预测变量数 = ${d.n_predictors}</p>`;
     html += `<p style="margin:4px 0;font-size:12px;color:var(--muted);">训练准确率 = ${d.accuracy}, 交叉验证准确率 = ${d.cv_accuracy ?? '—'}, 基线准确率 = ${d.baseline_accuracy}</p>`;
-    if (d.coefficients && Object.keys(d.coefficients).length) {
-      const items = Object.entries(d.coefficients).slice(0, 6).map(([k, v]) => `${k}: ${v}`).join('; ');
-      html += `<p style="margin:4px 0;font-size:12px;color:var(--muted);">主要判别载荷: ${items}</p>`;
-    }
   } else if (tt === 'ancova') {
     html += `<p style="margin:4px 0;font-size:12px;color:var(--muted);">n = ${d.n}, 协变量: ${d.covariate}, R² = ${d.r2_full}</p>`;
   }
-
   return html;
-}
-
-function renderResultTables(tables) {
-  const resultContainer = el('resultTableContainer');
-  if (resultContainer && tables.result) {
-    resultContainer.innerHTML = renderThreeLineTable(tables.result);
-  }
-
-  const groupContainer = el('groupStatsContainer');
-  if (groupContainer && tables.group_stats) {
-    groupContainer.innerHTML = `<h4 style="margin:10px 0 6px;">分组描述统计</h4>` + renderThreeLineTable(tables.group_stats);
-  } else if (groupContainer) {
-    groupContainer.innerHTML = '';
-  }
-
-  const postContainer = el('postHocContainer');
-  if (postContainer && tables.post_hoc) {
-    postContainer.innerHTML = `<h4 style="margin:10px 0 6px;">事后两两比较</h4>` + renderThreeLineTable(tables.post_hoc);
-  } else if (postContainer) {
-    postContainer.innerHTML = '';
-  }
-}
-
-function renderErrorResult(message) {
-  const container = el('resultSummary');
-  if (container) {
-    container.innerHTML = `<div class="result-note">分析错误: ${escapeHtml(message)}</div>`;
-  }
-}
-
-function renderThreeLineTable(tableData) {
-  if (!tableData || !tableData.columns || !tableData.rows) return '';
-  const { columns, rows, title } = tableData;
-  let html = '<div class="compact-table-wrap"><table class="three-line">';
-  if (title) html += `<caption>${escapeHtml(title)}</caption>`;
-  html += '<thead><tr>';
-  columns.forEach(c => { html += `<th>${escapeHtml(String(c))}</th>`; });
-  html += '</tr></thead><tbody>';
-  rows.forEach(row => {
-    html += '<tr>';
-    columns.forEach(c => {
-      const v = row[c] !== undefined && row[c] !== null ? row[c] : '—';
-      html += `<td>${escapeHtml(String(v))}</td>`;
-    });
-    html += '</tr>';
-  });
-  html += '</tbody></table></div>';
-  return html;
-}
-
-/* ── Variable Controls ─────────────────────────────────── */
-function buildVarControls() {
-  const container = el('varControls');
-  if (!container) return;
-
-  const config = getTestConfig(STATE.activeTestType);
-  if (!config) {
-    container.innerHTML = '<div class="empty-state small">请先选择检验方法并载入数据</div>';
-    return;
-  }
-
-  const cols = STATE.columns || [];
-  const varTypes = STATE.variableTypes || {};
-  const continuousCols = varTypes.continuous || cols.filter(c => /int|float/i.test(String(STATE.dtypes[c] || '')));
-  const categoricalCols = [...(varTypes.categorical || []), ...(varTypes.binary || [])];
-  const binaryCols = varTypes.binary || [];
-  const groupCandidates = [...new Set([...(varTypes.group || []), ...binaryCols, ...categoricalCols].filter(Boolean))];
-  const categoricalCandidates = [...new Set([...categoricalCols, ...(varTypes.group || []), ...binaryCols].filter(Boolean))];
-
-  let html = '';
-
-  // Main variable selector
-  html += '<div class="form-group">';
-  const varLabel = config.varType === 'categorical' ? '结局变量（分类）' : '指标变量（连续）';
-  html += `<label class="form-label">${varLabel} <span style="color:var(--rose);">*</span></label>`;
-  html += '<select id="varSelect" class="analysis-var-select">';
-  html += '<option value="">— 请选择 —</option>';
-  const varCandidates = config.varType === 'categorical' ? categoricalCandidates : continuousCols;
-  varCandidates.forEach(c => { html += `<option value="${c}">${c}</option>`; });
-  html += '</select>';
-  html += '</div>';
-
-  // Group variable
-  if (config.requiresGroup) {
-    html += '<div class="form-group">';
-    html += '<label class="form-label">分组变量 <span style="color:var(--rose);">*</span></label>';
-    html += '<select id="groupVarSelect" class="analysis-var-select">';
-    html += '<option value="">— 请选择 —</option>';
-    groupCandidates.forEach(c => { html += `<option value="${c}">${c}</option>`; });
-    html += '</select>';
-    html += '</div>';
-  }
-
-  // Paired variable
-  if (config.requiresPaired) {
-    const pairedLabel = config.requiresPairedLabel || (config.varType === 'categorical' ? '配对变量（变量2）' : '配对变量（干预后）');
-    html += '<div class="form-group">';
-    html += `<label class="form-label">${pairedLabel} <span style="color:var(--rose);">*</span></label>`;
-    html += '<select id="pairedVarSelect" class="analysis-var-select">';
-    html += '<option value="">— 请选择 —</option>';
-    const pairedCandidates = config.varType === 'categorical' ? categoricalCandidates : continuousCols;
-    pairedCandidates.forEach(c => { html += `<option value="${c}">${c}</option>`; });
-    html += '</select>';
-    html += '</div>';
-  }
-
-  // Subject variable (Friedman, RM ANOVA)
-  if (config.requiresSubject) {
-    html += '<div class="form-group">';
-    html += '<label class="form-label">受试者ID <span style="color:var(--rose);">*</span></label>';
-    html += '<select id="subjectVarSelect" class="analysis-var-select">';
-    html += '<option value="">— 请选择 —</option>';
-    const subjectCandidates = cols.filter(c => /subject|patient|id/i.test(c));
-    (subjectCandidates.length ? subjectCandidates : cols).forEach(c => {
-      html += `<option value="${c}">${c}</option>`;
-    });
-    html += '</select>';
-    html += '</div>';
-  }
-
-  // Time + Event (Log-rank)
-  if (config.requiresTimeEvent) {
-    html += '<div class="form-group">';
-    html += '<label class="form-label">时间变量 <span style="color:var(--rose);">*</span></label>';
-    html += '<select id="timeVarSelect" class="analysis-var-select">';
-    html += '<option value="">— 请选择 —</option>';
-    continuousCols.forEach(c => { html += `<option value="${c}">${c}</option>`; });
-    html += '</select>';
-    html += '</div>';
-    html += '<div class="form-group">';
-    html += '<label class="form-label">事件变量（0/1） <span style="color:var(--rose);">*</span></label>';
-    html += '<select id="eventVarSelect" class="analysis-var-select">';
-    html += '<option value="">— 请选择 —</option>';
-    [...binaryCols, ...categoricalCols].forEach(c => { html += `<option value="${c}">${c}</option>`; });
-    html += '</select>';
-    html += '</div>';
-  }
-
-  // Covariate (ANCOVA)
-  if (config.requiresCovariate) {
-    html += '<div class="form-group">';
-    html += '<label class="form-label">协变量 <span style="color:var(--rose);">*</span></label>';
-    html += '<select id="covarSelect" class="analysis-var-select">';
-    html += '<option value="">— 请选择 —</option>';
-    continuousCols.forEach(c => { html += `<option value="${c}">${c}</option>`; });
-    html += '</select>';
-    html += '</div>';
-  }
-
-  // Multi variable select (regression)
-  if (config.requiresMultiVar) {
-    html += '<div class="form-group">';
-    html += '<label class="form-label">自变量（可多选） <span style="color:var(--rose);">*</span></label>';
-    html += '<select id="xVarsSelect" class="analysis-var-select" multiple size="5" style="min-height:100px;">';
-    continuousCols.forEach(c => { html += `<option value="${c}">${c}</option>`; });
-    html += '</select>';
-    html += '<span class="form-hint">按住Ctrl/Cmd键多选</span>';
-    html += '</div>';
-  }
-
-  container.innerHTML = html;
-  applyDefaultVarSelections(config);
-}
-
-/* ── Post Hoc Section ─────────────────────────────────── */
-function updatePostHocSection() {
-  const section = el('postHocSection');
-  if (!section) return;
-  const config = getTestConfig(STATE.activeTestType);
-  section.hidden = !(config && config.supportsPostHoc);
-}
-
-/* ── Descriptive Statistics ───────────────────────────── */
-async function runDescriptive() {
-  if (!STATE.columns || STATE.columns.length === 0) { toast('请先载入数据', 'warning'); return; }
-  const btn = el('runDescriptiveBtn');
-  setLoading(btn, true);
-  try {
-    const descSelect = el('descVarSelect');
-    const selectedVars = descSelect && descSelect.selectedOptions
-      ? Array.from(descSelect.selectedOptions).map(o => o.value)
-      : [];
-    const body = {
-      use_demo: !STATE.uploadId,
-      dataset_name: STATE.datasetName || 'general_clinical_example',
-      upload_id: STATE.uploadId || null,
-      variables: selectedVars.length > 0 ? selectedVars : null,
-      test_type: '',
-      var: '',
-    };
-    const data = await apiPost('/api/descriptive', body);
-    if (data.status === 'ok' && data.table) {
-      const container = el('descriptiveTableContainer');
-      if (container) { container.innerHTML = renderThreeLineTable(data.table); }
-      toast('描述统计生成完成！', 'success');
-    }
-  } catch (e) {
-    toast('描述统计失败: ' + e.message, 'error');
-  } finally {
-    setLoading(btn, false);
-  }
-}
-
-function populateDescVarSelect() {
-  const select = el('descVarSelect');
-  if (!select) return;
-  const cols = STATE.columns || [];
-  select.innerHTML = cols.map(c => `<option value="${c}">${c}</option>`).join('');
-}
-
-/* ── Chart / Visualization ────────────────────────────── */
-function updateChartTab(result) {
-  const config = getTestConfig(STATE.activeTestType);
-  const chartData = result?.chart_data;
-  const container = el('chartPreviewContainer');
-  const exportBar = el('chartExportBar');
-  if (!container) return;
-
-  if (!chartData || !chartData.chart_type) {
-    STATE.currentChartData = null;
-    if (exportBar) exportBar.style.display = 'none';
-    container.innerHTML = '<div class="empty-state">此检验暂无统计图形</div>';
-    return;
-  }
-
-  try {
-    STATE.currentChartData = chartData;
-    const theme = getActiveTheme();
-    const colors = getActiveColors();
-    const chartConfig = getStatChartConfig(chartData.chart_type);
-
-    let traces, layout;
-    if (chartConfig) {
-      traces = chartConfig.buildTraces(chartData, colors);
-      layout = Object.assign({
-        font: theme.font,
-        paper_bgcolor: theme.paper_bg_color,
-        plot_bgcolor: theme.plot_bg_color,
-        margin: { l: 60, r: 20, t: 50, b: 60 },
-      }, chartConfig.buildLayout(chartData, theme));
-    } else {
-      // Fallback for simple chart types
-      traces = buildFallbackTraces(chartData, colors);
-      layout = buildFallbackLayout(chartData, theme);
-    }
-
-    // Apply 3-line aesthetics to axes
-    if (layout.xaxis) {
-      layout.xaxis.linecolor = theme.axis_color;
-      layout.xaxis.linewidth = 1.2;
-      layout.xaxis.showline = true;
-      layout.xaxis.mirror = false;
-    }
-    if (layout.yaxis) {
-      layout.yaxis.linecolor = theme.axis_color;
-      layout.yaxis.linewidth = 1.2;
-      layout.yaxis.showline = true;
-      layout.yaxis.mirror = false;
-    }
-
-    traces = polishStatTracesForPublication(traces, theme);
-    layout = polishStatLayoutForPublication(layout, chartData.chart_type, theme);
-    STATE.currentPlotlyData = traces;
-    STATE.currentPlotlyLayout = layout;
-    renderChart(traces, layout);
-    if (exportBar) exportBar.style.display = 'flex';
-  } catch (e) {
-    console.error('Chart render error:', e);
-    if (exportBar) exportBar.style.display = 'none';
-    container.innerHTML = '<div class="empty-state">图形渲染失败</div>';
-  }
-}
-
-function polishStatTracesForPublication(traces, theme) {
-  const palette = theme.colorway || ['#2E6F9E', '#D95F59', '#2A9D8F', '#E9A93A'];
-  const markerLine = '#ffffff';
-  return (traces || []).map((trace, i) => {
-    const t = { ...trace };
-    const color = palette[i % palette.length];
-    if (t.type === 'scatter') {
-      const mode = String(t.mode || '');
-      if (mode.includes('lines')) {
-        t.line = { ...(t.line || {}), color: t.line?.color || color, width: Math.max(t.line?.width || 0, 2.6), shape: t.line?.shape || 'spline' };
-      }
-      if (mode.includes('markers') || !mode) {
-        t.marker = { ...(t.marker || {}), color: t.marker?.color || color, size: t.marker?.size || 8.5, opacity: t.marker?.opacity ?? 0.78, line: { color: markerLine, width: 0.8 } };
-      }
-    }
-    if (t.type === 'bar') {
-      t.marker = { ...(t.marker || {}), color: t.marker?.color || color, opacity: t.marker?.opacity ?? 0.88, line: { color: markerLine, width: 0.8 } };
-      t.textposition = t.textposition || 'outside';
-      t.cliponaxis = false;
-    }
-    if (t.type === 'box') {
-      t.line = { ...(t.line || {}), color, width: 1.6 };
-      t.fillcolor = t.fillcolor || hexToRgba(color, 0.2);
-      t.marker = { ...(t.marker || {}), color, size: 4, opacity: 0.55, line: { color: markerLine, width: 0.4 } };
-      t.boxmean = t.boxmean ?? 'sd';
-      t.boxpoints = t.boxpoints ?? 'outliers';
-      t.jitter = t.jitter ?? 0.28;
-    }
-    if (t.type === 'histogram') {
-      t.marker = { ...(t.marker || {}), color, opacity: 0.78, line: { color: markerLine, width: 0.6 } };
-      t.nbinsx = t.nbinsx || 28;
-    }
-    return t;
-  });
-}
-
-function polishStatLayoutForPublication(layout, chartType, theme) {
-  const l = { ...(layout || {}) };
-  const ink = theme.axis_color || theme.font?.color || '#1F2937';
-  const family = theme.font?.family || 'Noto Sans SC, Microsoft YaHei, Arial';
-  const axisColor = theme.axis_color || '#26313D';
-  l.paper_bgcolor = theme.paper_bg_color || '#ffffff';
-  l.plot_bgcolor = theme.plot_bg_color || '#ffffff';
-  l.font = { family, size: 12, color: ink };
-  l.hoverlabel = { bgcolor: '#ffffff', bordercolor: '#D7DEE8', font: { family, color: ink, size: 11 }, ...(l.hoverlabel || {}) };
-  l.legend = {
-    orientation: 'h',
-    x: 0,
-    y: -0.18,
-    xanchor: 'left',
-    yanchor: 'top',
-    bgcolor: 'rgba(255,255,255,0)',
-    borderwidth: 0,
-    font: { family, size: 11, color: ink },
-    ...(l.legend || {}),
-  };
-  l.title = normalizeStatChartTitle(l.title, family, ink);
-  if (!l.xaxis) l.xaxis = {};
-  if (!l.yaxis) l.yaxis = {};
-  ['xaxis', 'yaxis'].forEach((axisKey) => {
-    const prev = l[axisKey] || {};
-    const isY = axisKey === 'yaxis';
-    l[axisKey] = {
-      ...prev,
-      showline: false,
-      linewidth: 0,
-      mirror: false,
-      ticks: 'outside',
-      ticklen: 4,
-      tickwidth: 1,
-      tickcolor: axisColor,
-      zeroline: false,
-      showgrid: isY,
-      gridcolor: theme.grid_color || 'rgba(31,41,55,0.08)',
-      gridwidth: 0.6,
-      automargin: true,
-      tickfont: { family, size: 11, color: ink },
-      title: normalizeAxisTitle(prev.title, family, ink),
-    };
-  });
-  l.margin = { l: 76, r: 34, t: 74, b: 82, ...(l.margin || {}) };
-  if (!['survival'].includes(chartType)) {
-    l.shapes = [
-      ...(Array.isArray(l.shapes) ? l.shapes : []),
-      { type: 'line', xref: 'x domain', yref: 'y domain', x0: 0, y0: 0, x1: 1, y1: 0, line: { color: axisColor, width: 1.45 }, layer: 'above' },
-      { type: 'line', xref: 'x domain', yref: 'y domain', x0: 0, y0: 0, x1: 0, y1: 1, line: { color: axisColor, width: 1.45 }, layer: 'above' },
-    ];
-    l.annotations = [
-      { x: 1.02, y: 0, xref: 'x domain', yref: 'y domain', ax: 0.97, ay: 0, axref: 'x domain', ayref: 'y domain', showarrow: true, arrowhead: 3, arrowsize: 1.15, arrowwidth: 1.45, arrowcolor: axisColor, text: '' },
-      { x: 0, y: 1.03, xref: 'x domain', yref: 'y domain', ax: 0, ay: 0.97, axref: 'x domain', ayref: 'y domain', showarrow: true, arrowhead: 3, arrowsize: 1.15, arrowwidth: 1.45, arrowcolor: axisColor, text: '' },
-      ...(Array.isArray(l.annotations) ? l.annotations : []),
-    ];
-  }
-  return l;
-}
-
-function normalizeStatChartTitle(title, family, ink) {
-  const titleObj = typeof title === 'string' ? { text: title } : (title || { text: '' });
-  return {
-    ...titleObj,
-    x: titleObj.x ?? 0.02,
-    y: titleObj.y ?? 0.97,
-    xanchor: titleObj.xanchor || 'left',
-    yanchor: titleObj.yanchor || 'top',
-    font: { family, size: titleObj.font?.size || 17, color: titleObj.font?.color || ink },
-  };
-}
-
-function normalizeAxisTitle(title, family, ink) {
-  const titleObj = typeof title === 'string' ? { text: title } : (title || {});
-  return { ...titleObj, font: { family, size: 13, color: ink }, standoff: 10 };
-}
-
-function buildFallbackTraces(chartData, colors) {
-  const ct = chartData.chart_type;
-  if (ct === 'box_violin') {
-    return (chartData.traces || []).map((t, i) => ({
-      type: 'box', name: t.name, y: t.values || [],
-      marker: { color: colors[i % colors.length] },
-      fillcolor: hexToRgba(colors[i % colors.length], 0.15),
-      boxmean: 'sd', showlegend: true,
-    }));
-  }
-  if (ct === 'bar_grouped') {
-    return (chartData.series || []).map((s, i) => ({
-      type: 'bar', name: s.name, x: chartData.categories, y: s.values,
-      marker: { color: colors[i % colors.length], opacity: 0.85 },
-    }));
-  }
-  if (ct === 'paired_box') {
-    return [
-      { type: 'box', name: chartData.var_1_name, y: chartData.var_1_values, marker: { color: colors[0] }, fillcolor: hexToRgba(colors[0], 0.15) },
-      { type: 'box', name: chartData.var_2_name, y: chartData.var_2_values, marker: { color: colors[1] }, fillcolor: hexToRgba(colors[1], 0.15) },
-    ];
-  }
-  if (ct === 'paired_bar') {
-    return [
-      { type: 'bar', name: chartData.var_1_name, x: chartData.categories, y: chartData.var_1_counts, marker: { color: colors[0], opacity: 0.85 } },
-      { type: 'bar', name: chartData.var_2_name, x: chartData.categories, y: chartData.var_2_counts, marker: { color: colors[1], opacity: 0.85 } },
-    ];
-  }
-  if (ct === 'scatter_regression') {
-    return [{
-      type: 'scatter', mode: 'markers',
-      x: chartData.x_values, y: chartData.y_values,
-      marker: { color: colors[0], size: 8, opacity: 0.65 },
-      name: 'Data',
-    }];
-  }
-  if (ct === 'histogram') {
-    return [{
-      type: 'histogram', x: chartData.traces?.[0]?.values || [],
-      marker: { color: colors[0], opacity: 0.75 }, nbinsx: 25,
-    }];
-  }
-  return [{ type: 'scatter', mode: 'markers', x: [], y: [] }];
-}
-
-function buildFallbackLayout(chartData, theme) {
-  return {
-    font: theme.font,
-    paper_bgcolor: theme.paper_bg_color,
-    plot_bgcolor: theme.plot_bg_color,
-    margin: { l: 60, r: 20, t: 50, b: 60 },
-    title: { text: chartData.title || '', font: { size: 15, color: theme.font.color } },
-    xaxis: { title: { text: chartData.x_label || '', font: { size: 12 } }, gridcolor: theme.grid_color, zeroline: false },
-    yaxis: { title: { text: chartData.y_label || '', font: { size: 12 } }, gridcolor: theme.grid_color, zeroline: false },
-  };
-}
-
-function renderChart(traces, layout) {
-  const container = el('chartPreviewContainer');
-  if (!container) return;
-  if (typeof Plotly === 'undefined') {
-    container.innerHTML = '<div class="empty-state">Plotly.js 未加载</div>';
-    return;
-  }
-  const oldPlot = container.querySelector('.js-plotly-plot');
-  if (oldPlot) Plotly.purge(oldPlot);
-  container.innerHTML = '';
-  const plotDiv = document.createElement('div');
-  plotDiv.className = 'chart-plot';
-  container.appendChild(plotDiv);
-  const chartType = STATE.currentChartData?.chart_type || 'stat_chart';
-  const size = fitStatChartPlotToFrame(plotDiv, chartType);
-  const finalLayout = { ...(layout || {}), width: size.width, height: size.height, autosize: false };
-  STATE.currentPlotlyLayout = finalLayout;
-  Plotly.newPlot(plotDiv, traces, finalLayout, {
-    responsive: true,
-    displayModeBar: true,
-    toImageButtonOptions: { format: 'png', filename: 'statistical_chart', width: 1600, height: 1050, scale: 2 },
-    modeBarButtonsToRemove: ['lasso2d', 'select2d', 'sendDataToCloud'],
-    displaylogo: false,
-  }).then(() => {
-    installStatChartResizeObserver(plotDiv, chartType);
-  });
-}
-
-function disconnectStatChartResizeObserver() {
-  if (STATE.currentChartResizeObserver) {
-    STATE.currentChartResizeObserver.disconnect();
-    STATE.currentChartResizeObserver = null;
-  }
-}
-
-function getStatChartFrameSize(plotMount, chartType) {
-  const preview = el('chartPreviewContainer') || plotMount.parentElement;
-  const width = Math.max(520, Math.floor(preview?.clientWidth || 900));
-  const denseTypes = ['bar_grouped', 'paired_bar', 'repeated_measures'];
-  const minHeight = denseTypes.includes(chartType) ? 620 : 560;
-  const height = Math.max(minHeight, Math.floor(preview?.clientHeight || minHeight));
-  return { width, height };
-}
-
-function fitStatChartPlotToFrame(plotMount, chartType) {
-  const size = getStatChartFrameSize(plotMount, chartType);
-  plotMount.style.width = '100%';
-  plotMount.style.height = `${size.height}px`;
-  plotMount.style.minHeight = `${size.height}px`;
-  return size;
-}
-
-function installStatChartResizeObserver(plotMount, chartType) {
-  disconnectStatChartResizeObserver();
-  if (!window.ResizeObserver) return;
-  let resizeFrame = null;
-  const observer = new ResizeObserver(() => {
-    if (resizeFrame) cancelAnimationFrame(resizeFrame);
-    resizeFrame = requestAnimationFrame(() => {
-      const size = fitStatChartPlotToFrame(plotMount, chartType);
-      if (window.Plotly && plotMount.isConnected) {
-        Plotly.relayout(plotMount, { width: size.width, height: size.height, autosize: false });
-      }
-    });
-  });
-  observer.observe(plotMount.parentElement || plotMount);
-  STATE.currentChartResizeObserver = observer;
 }
 
 /* ── Helpers ──────────────────────────────────────────── */
@@ -812,4 +575,377 @@ function formatPValueDisplay(p) {
   if (p < 0.0001) return '< 0.0001';
   if (p < 0.001) return '< 0.001';
   return p.toFixed(4);
+}
+
+/* ── Post-hoc Section ─────────────────────────────────── */
+function updatePostHocSection() {
+  // Post-hoc is now handled via chart params; migrated from old UI
+}
+
+/* ── Statistical Chart Visualization ───────────────────── */
+/* Computes chart data using the Basicpicture publication-quality pipeline.
+   Actual Plotly rendering is deferred to renderChart() when the chart tab becomes visible. */
+function renderStatChart(result, fullResult) {
+  if (!window.Plotly) return;
+
+  // Prefer full dataset (loaded by loadChartDataset), fall back to preview rows
+  let rawData = STATE._statChartData || null;
+  if (!rawData || Object.keys(rawData).length === 0) {
+    rawData = typeof buildDataFromState === 'function' ? buildDataFromState() : {};
+  }
+  const params = typeof collectChartParams === 'function' ? collectChartParams() : {};
+  const varName = params.var || '';
+  const groupVar = params.group_var || '';
+  const pairedVar = params.paired_var || '';
+  const titleText = params.title || (el('chartTitleInput') ? el('chartTitleInput').value : '') || result.test_name || '';
+  const tt = result.test_type;
+  const chartType = tt;
+
+  let traces = [];
+  let layout = { title: { text: titleText } };
+
+  try {
+    if (tt === 't_test_independent' && varName && groupVar && rawData[varName] && rawData[groupVar]) {
+      const groups = [...new Set(rawData[groupVar].filter(v => v !== '' && v != null))];
+      traces = groups.map((g, i) => ({
+        type: 'box', name: String(g),
+        y: rawData[varName].filter((_, idx) => rawData[groupVar][idx] == g),
+        meta: { colorIndex: i },
+        boxmean: 'sd', boxpoints: 'outliers',
+      }));
+      layout.yaxis = { title: { text: varName } };
+      layout.xaxis = { title: { text: groupVar } };
+    }
+    else if (tt === 't_test_paired' && varName && pairedVar && rawData[varName] && rawData[pairedVar]) {
+      const x = rawData[varName].map(Number).filter(v => !isNaN(v));
+      const y = rawData[pairedVar].map(Number).filter(v => !isNaN(v));
+      const n = Math.min(x.length, y.length);
+      traces = [{
+        type: 'scatter', mode: 'markers',
+        x: x.slice(0, n), y: y.slice(0, n),
+        meta: { colorIndex: 0 },
+        name: '配对数据点',
+      }];
+      const allVals = [...x.slice(0, n), ...y.slice(0, n)];
+      const lo = Math.min(...allVals), hi = Math.max(...allVals);
+      traces.push({ type: 'scatter', mode: 'lines', x: [lo, hi], y: [lo, hi],
+        meta: { colorIndex: 1 }, name: 'y=x',
+        line: { dash: 'dash' } });
+      layout.xaxis = { title: { text: varName } };
+      layout.yaxis = { title: { text: pairedVar } };
+    }
+    else if (tt === 'one_sample_t_test' && varName && rawData[varName]) {
+      const vals = rawData[varName].map(Number).filter(v => !isNaN(v));
+      traces = [{
+        type: 'histogram', x: vals, nbinsx: 28,
+        meta: { colorIndex: 0 },
+        name: varName,
+      }];
+      const mean = vals.reduce((a, b) => a + b, 0) / vals.length;
+      traces.push({ type: 'scatter', mode: 'lines', x: [mean, mean], y: [0, vals.length],
+        meta: { colorIndex: 1 }, name: `均值=${mean.toFixed(2)}`,
+        line: { dash: 'dash' } });
+      layout.xaxis = { title: { text: varName } };
+      layout.yaxis = { title: { text: '频数' } };
+      layout.bargap = 0.05;
+    }
+    else if (tt === 'normality_test' && varName && rawData[varName]) {
+      const vals = rawData[varName].map(Number).filter(v => !isNaN(v)).sort((a, b) => a - b);
+      const n = vals.length;
+      if (n > 2) {
+        const mean = vals.reduce((a, b) => a + b, 0) / n;
+        const std = Math.sqrt(vals.reduce((s, v) => s + (v - mean) ** 2, 0) / (n - 1));
+        const qqX = [], qqY = [];
+        for (let i = 0; i < n; i++) {
+          const p = (i + 0.5) / n;
+          const z = _normalInv(p);
+          qqX.push(mean + std * z);
+          qqY.push(vals[i]);
+        }
+        traces = [{
+          type: 'scatter', mode: 'markers',
+          x: qqX, y: qqY,
+          meta: { colorIndex: 0 },
+          name: 'Q-Q 点',
+        }];
+        const lo = Math.min(...qqX, ...qqY), hi = Math.max(...qqX, ...qqY);
+        traces.push({ type: 'scatter', mode: 'lines', x: [lo, hi], y: [lo, hi],
+          meta: { colorIndex: 1 }, name: '参考线',
+          line: { dash: 'dash' } });
+        layout.xaxis = { title: { text: '理论分位数' } };
+        layout.yaxis = { title: { text: '样本分位数' } };
+      }
+    }
+    else if ((tt === 'anova' || tt === 'levene_test' || tt === 'kruskal_wallis') && varName && groupVar && rawData[varName] && rawData[groupVar]) {
+      const groups = [...new Set(rawData[groupVar].filter(v => v !== '' && v != null))];
+      traces = groups.map((g, i) => ({
+        type: 'box', name: String(g),
+        y: rawData[varName].filter((_, idx) => rawData[groupVar][idx] == g),
+        meta: { colorIndex: i },
+        boxmean: 'sd', boxpoints: 'outliers',
+      }));
+      layout.yaxis = { title: { text: varName } };
+      layout.xaxis = { title: { text: groupVar } };
+    }
+    else if ((tt === 'chi_square' || tt === 'fisher_exact') && varName && groupVar && rawData[varName] && rawData[groupVar]) {
+      const rowVals = [...new Set(rawData[varName].filter(v => v !== '' && v != null))];
+      const colVals = [...new Set(rawData[groupVar].filter(v => v !== '' && v != null))];
+      traces = colVals.map((c, i) => ({
+        type: 'bar', name: String(c),
+        x: rowVals.map(String),
+        y: rowVals.map(rv => rawData[varName].filter((_, idx) => rawData[varName][idx] == rv && rawData[groupVar][idx] == c).length),
+        meta: { colorIndex: i },
+      }));
+      layout.barmode = 'stack';
+      layout.xaxis = { title: { text: varName } };
+      layout.yaxis = { title: { text: '频数' } };
+    }
+    else if ((tt === 'mann_whitney') && varName && groupVar && rawData[varName] && rawData[groupVar]) {
+      const groups = [...new Set(rawData[groupVar].filter(v => v !== '' && v != null))];
+      traces = groups.map((g, i) => ({
+        type: 'box', name: String(g),
+        y: rawData[varName].filter((_, idx) => rawData[groupVar][idx] == g),
+        meta: { colorIndex: i },
+        boxmean: 'sd', boxpoints: 'outliers',
+      }));
+      layout.yaxis = { title: { text: varName } };
+      layout.xaxis = { title: { text: groupVar } };
+    }
+    else if (tt === 'wilcoxon_signed_rank' && varName && pairedVar && rawData[varName] && rawData[pairedVar]) {
+      const x = rawData[varName].map(Number).filter(v => !isNaN(v));
+      const y = rawData[pairedVar].map(Number).filter(v => !isNaN(v));
+      const n = Math.min(x.length, y.length);
+      if (n > 0) {
+        traces = [{
+          type: 'scatter', mode: 'markers',
+          x: x.slice(0, n), y: y.slice(0, n),
+          meta: { colorIndex: 0 },
+          name: '配对数据点',
+        }];
+        layout.xaxis = { title: { text: varName } };
+        layout.yaxis = { title: { text: pairedVar } };
+      }
+    }
+    else if (tt === 'mcnemar') {
+      // McNemar uses categorical paired data — use backend chart_data for grouped bar chart
+      const cd = result.chart_data || fullResult.chart_data || {};
+      const cats = cd.categories || [];
+      const c1 = cd.var_1_counts || [];
+      const c2 = cd.var_2_counts || [];
+      if (cats.length > 0) {
+        traces = [
+          {
+            type: 'bar', name: cd.var_1_name || varName || '变量1',
+            x: cats.map(String), y: c1,
+            meta: { colorIndex: 0 },
+          },
+          {
+            type: 'bar', name: cd.var_2_name || pairedVar || '变量2',
+            x: cats.map(String), y: c2,
+            meta: { colorIndex: 1 },
+          },
+        ];
+        layout.barmode = 'group';
+        layout.xaxis = { title: { text: '类别' } };
+        layout.yaxis = { title: { text: '频数' } };
+      }
+    }
+    else if ((tt === 'pearson_correlation' || tt === 'spearman_correlation') && varName && pairedVar && rawData[varName] && rawData[pairedVar]) {
+      const x = rawData[varName].map(Number).filter(v => !isNaN(v));
+      const y = rawData[pairedVar].map(Number).filter(v => !isNaN(v));
+      const n = Math.min(x.length, y.length);
+      traces = [{
+        type: 'scatter', mode: 'markers',
+        x: x.slice(0, n), y: y.slice(0, n),
+        meta: { colorIndex: 0 },
+        name: '数据点',
+      }];
+      if (n > 2) {
+        const xs = x.slice(0, n), ys = y.slice(0, n);
+        const mx = xs.reduce((a, b) => a + b, 0) / n;
+        const my = ys.reduce((a, b) => a + b, 0) / n;
+        let num = 0, den = 0;
+        for (let i = 0; i < n; i++) { num += (xs[i] - mx) * (ys[i] - my); den += (xs[i] - mx) ** 2; }
+        if (den > 0) {
+          const slope = num / den, intercept = my - slope * mx;
+          const xRange = [Math.min(...xs), Math.max(...xs)];
+          traces.push({ type: 'scatter', mode: 'lines', x: xRange, y: xRange.map(xv => slope * xv + intercept),
+            meta: { colorIndex: 1 }, name: '回归线',
+            line: { dash: 'dash' } });
+        }
+      }
+      layout.xaxis = { title: { text: varName } };
+      layout.yaxis = { title: { text: pairedVar } };
+    }
+    else if (tt === 'log_rank') {
+      const timeVar = params.time_var || '';
+      const eventVar = params.event_var || '';
+      if (timeVar && eventVar && rawData[timeVar] && rawData[eventVar] && groupVar && rawData[groupVar]) {
+        const groups = [...new Set(rawData[groupVar].filter(v => v !== '' && v != null))];
+        traces = groups.map((g, gi) => {
+          const times = [], probs = [];
+          const groupTimes = rawData[timeVar].filter((_, idx) => rawData[groupVar][idx] == g).map(Number).filter(v => !isNaN(v)).sort((a, b) => a - b);
+          const groupEvents = rawData[eventVar].filter((_, idx) => rawData[groupVar][idx] == g);
+          let surv = 1.0;
+          let atRisk = groupTimes.length;
+          times.push(0); probs.push(1);
+          for (let i = 0; i < groupTimes.length; i++) {
+            const died = groupEvents[i] == 1 || groupEvents[i] == '1' || groupEvents[i] === true;
+            if (died) { surv *= (atRisk - 1) / atRisk; }
+            atRisk--;
+            times.push(groupTimes[i]); probs.push(surv);
+          }
+          return { type: 'scatter', mode: 'lines', name: String(g), x: times, y: probs, meta: { colorIndex: gi } };
+        });
+        layout.xaxis = { title: { text: '时间' } };
+        layout.yaxis = { title: { text: '生存概率' }, range: [0, 1.05] };
+      }
+    }
+    else if (tt === 'logistic_regression' || tt === 'linear_regression' || tt === 'discriminant_analysis' || tt === 'quadratic_discriminant_analysis') {
+      const d = result.details || {};
+      const coefs = d.coefficients || d.odds_ratios || {};
+      const names = Object.keys(coefs);
+      if (names.length > 0) {
+        traces = [{
+          type: 'bar', name: tt === 'logistic_regression' ? 'OR' : 'β',
+          x: names, y: names.map(n => Number(coefs[n]) || 0),
+          marker: { color: names.map((_, i) => _statPalette()[i % _statPalette().length]) },
+          meta: { colorIndex: 0 },
+        }];
+        layout.xaxis = { title: { text: '变量' } };
+        layout.yaxis = { title: { text: tt === 'logistic_regression' ? 'OR值' : '回归系数β' } };
+      }
+    }
+    else if (tt === 'ancova' && varName && groupVar) {
+      if (rawData[varName] && rawData[groupVar]) {
+        const groups = [...new Set(rawData[groupVar].filter(v => v !== '' && v != null))];
+        traces = groups.map((g, i) => ({
+          type: 'box', name: String(g),
+          y: rawData[varName].filter((_, idx) => rawData[groupVar][idx] == g),
+          meta: { colorIndex: i },
+          boxmean: 'sd', boxpoints: 'outliers',
+        }));
+        layout.yaxis = { title: { text: varName } };
+        layout.xaxis = { title: { text: groupVar } };
+      }
+    }
+    else if (tt === 'friedman' || tt === 'repeated_measures_anova') {
+      if (varName && groupVar && rawData[varName] && rawData[groupVar]) {
+        const groups = [...new Set(rawData[groupVar].filter(v => v !== '' && v != null))];
+        traces = groups.map((g, i) => ({
+          type: 'box', name: String(g),
+          y: rawData[varName].filter((_, idx) => rawData[groupVar][idx] == g),
+          meta: { colorIndex: i },
+          boxmean: 'sd', boxpoints: 'outliers',
+        }));
+        layout.yaxis = { title: { text: varName } };
+        layout.xaxis = { title: { text: groupVar } };
+      }
+    }
+  } catch (e) {
+    console.warn('Stat chart computation failed:', e);
+  }
+
+  // No chart data — show placeholder and clear state
+  if (traces.length === 0) {
+    const container = el('chartPreviewContainer');
+    if (container) {
+      const oldPlot = container.querySelector('.js-plotly-plot');
+      if (oldPlot && window.Plotly) Plotly.purge(oldPlot);
+      container.innerHTML = `<div style="width:100%;padding:24px 28px;text-align:center;">
+        <h3 style="margin:0 0 12px;color:var(--ink);">${escapeHtml(result.test_name || '')}</h3>
+        <p style="font-size:15px;color:var(--muted);">${escapeHtml(result.summary || '')}</p>
+      </div>`;
+    }
+    STATE.currentPlotlyData = null;
+    STATE.currentPlotlyLayout = null;
+    STATE.currentChartSourceData = null;
+    return;
+  }
+
+  // ── Apply Basicpicture publication-quality pipeline ──
+  const theme = typeof getActiveTheme === 'function' ? getActiveTheme() : (CHART_THEMES ? CHART_THEMES[STATE.chartTheme || 'cnsTheme'] : {});
+  const defaultMargin = { l: 72, r: 48, t: 72, b: 72 };
+
+  if (typeof polishTracesForPublication === 'function') {
+    traces = polishTracesForPublication(traces, theme);
+  }
+  if (typeof applyThemeLayout === 'function') {
+    layout = applyThemeLayout(layout, theme);
+  }
+  layout.margin = { ...defaultMargin, ...(layout.margin || {}) };
+  if (typeof polishLayoutForPublication === 'function') {
+    layout = polishLayoutForPublication(layout, chartType, theme);
+  }
+  layout.autosize = true;
+  if (layout.showlegend === undefined) {
+    layout.showlegend = traces.some(t => t && t.showlegend !== false && t.name);
+  }
+
+  // Store polished chart data in STATE (defer Plotly rendering to renderChart())
+  STATE.currentPlotlyData = traces;
+  STATE.currentPlotlyLayout = layout;
+  STATE.currentChartSourceData = rawData;
+  if (typeof saveCurrentChartParams === 'function') saveCurrentChartParams(params);
+
+  // Prepare container placeholder
+  const container = el('chartPreviewContainer');
+  if (container) {
+    if (typeof disconnectChartResizeObserver === 'function') disconnectChartResizeObserver();
+    const oldPlot = container.matches('.js-plotly-plot') ? container : container.querySelector('.js-plotly-plot');
+    if (oldPlot && window.Plotly) Plotly.purge(oldPlot);
+    container.innerHTML = '<div class="empty-state">图表数据已准备，切换到可视化标签查看</div>';
+    container.classList.remove('js-plotly-plot');
+  }
+}
+
+function _statPalette() {
+  const theme = typeof getActiveTheme === 'function' ? getActiveTheme() : {};
+  return (theme.colorway || ['#2E6F9E', '#D95F59', '#2A9D8F', '#E9A93A', '#6F5AA7', '#7C8B52']);
+}
+
+// Approximate inverse normal CDF (Abramowitz & Stegun)
+function _normalInv(p) {
+  if (p <= 0) return -4;
+  if (p >= 1) return 4;
+  const a = [-3.969683028665376e1, 2.209460984245205e2, -2.759285104799983e2, 1.383577518672690e2, -3.066479806614716e1, 2.506628277459239e0];
+  const b = [-5.447609879822406e1, 1.615858368580409e2, -1.556989798598866e2, 6.680131188771972e1, -1.328068155288572e1];
+  const c = [-7.784894002430293e-3, -3.223964580411365e-1, -2.400758277058772e0, -2.549732539343734e0, 4.374664141464968e0, 2.938163982698783e0];
+  const d = [7.784695709041462e-3, 3.224671290700398e-1, 2.445134137142996e0, 3.754408661907416e0];
+  const pLow = 0.02425, pHigh = 1 - pLow;
+  let q, r;
+  if (p < pLow) {
+    q = Math.sqrt(-2 * Math.log(p));
+    return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) / ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
+  } else if (p <= pHigh) {
+    q = p - 0.5; r = q * q;
+    return (((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q / (((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1);
+  } else {
+    q = Math.sqrt(-2 * Math.log(1 - p));
+    return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) / ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
+  }
+}
+
+/* ── Descriptive Statistics ───────────────────────────── */
+async function runDescriptive() {
+  if (!STATE.columns || STATE.columns.length === 0) { toast('请先载入数据', 'warning'); return; }
+  try {
+    const body = {
+      use_demo: !STATE.uploadId,
+      dataset_name: STATE.datasetName || 'general_clinical_example',
+      upload_id: STATE.uploadId || null,
+    };
+    const data = await apiPost('/api/descriptive', body);
+    if (data.status === 'ok' && data.table) {
+      const container = el('descriptiveTableContainer');
+      if (container) {
+        container.innerHTML = `<div style="width:100%;overflow-y:auto;padding:4px 0;">
+          <h4 style="margin:0 0 10px;">描述统计结果</h4>${renderStatThreeLineTable(data.table)}</div>`;
+      }
+      toast('描述统计生成完成！', 'success');
+      if (typeof activateWorkspaceTab === 'function') activateWorkspaceTab('descriptive');
+    }
+  } catch (e) {
+    toast('描述统计失败: ' + e.message, 'error');
+  }
 }

@@ -4,18 +4,14 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>临床数据统计分析平台</title>
-    <link rel="stylesheet" href="/static/css/theme.css?v=2.2.0" />
-    <link rel="stylesheet" href="/static/css/layout.css?v=2.2.0" />
-    <link rel="stylesheet" href="/static/css/components.css?v=2.2.0" />
-    <link rel="stylesheet" href="/static/css/tables.css?v=2.2.0" />
-    <script src="/static/vendor/plotly.min.js"></script>
+    <link rel="stylesheet" href="/static/styles.css?v=4.0.0" />
+    <script src="/static/vendor/plotly.min.js?v=local-3.0.1-cns3"></script>
   </head>
   <body>
     <main class="app-shell">
       <header class="topbar">
         <div class="topbar-left">
           <h1>临床数据统计分析平台</h1>
-          <span class="topbar-sub">Clinical Statistics Analysis Platform</span>
         </div>
         <div class="flow-line" aria-label="workflow">
           <span class="is-active">选择</span>
@@ -27,6 +23,7 @@
       </header>
 
       <section class="workbench-grid">
+        <!-- ═══ LEFT PANEL ═══════════════════════════════════════ -->
         <aside class="panel input-panel">
           <div class="panel-section">
             <div class="panel-head">
@@ -37,7 +34,7 @@
               </div>
             </div>
 
-            <div class="test-cat-tabs" id="testCatTabs">
+            <div class="chart-cat-tabs" id="testCatTabs">
               <button class="cat-tab active" data-cat="parametric">参数检验</button>
               <button class="cat-tab" data-cat="nonparametric">非参数检验</button>
               <button class="cat-tab" data-cat="categorical">分类资料</button>
@@ -46,7 +43,7 @@
               <button class="cat-tab" data-cat="regression">回归/判别</button>
             </div>
 
-            <div class="mini-test-grid" id="miniTestGrid"></div>
+            <div class="mini-chart-grid" id="miniTestGrid"></div>
           </div>
 
           <div class="panel-section">
@@ -54,17 +51,17 @@
               <span class="step">02</span>
               <div>
                 <h2>数据</h2>
-                <p>CSV / Excel</p>
+                <p>示例数据 / 自定义 CSV、Excel</p>
               </div>
             </div>
 
             <div class="data-actions">
               <button id="loadExampleBtn" class="action-btn action-btn-primary">
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1v10M4 7l4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 13h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1v10M4 7l4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 13h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
                 加载示例
               </button>
               <button id="uploadDataBtn" class="action-btn action-btn-ghost">
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 11V1M4 5l4-4 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 13h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 11V1M4 5l4-4 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 13h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
                 上传数据
               </button>
             </div>
@@ -76,8 +73,138 @@
             </div>
 
             <div class="data-source-meta" id="wsDataMeta">请先选择检验方法</div>
-          </div>
 
+            <div class="sidebar-download-card">
+              <h4>当前检验示例</h4>
+              <div id="downloadList" class="download-list empty">选择检验方法后可下载对应示例</div>
+            </div>
+
+            <div class="sidebar-download-card compact">
+              <h4>示例库</h4>
+              <div id="exampleList" class="download-list">
+                <span class="hint-text">正在读取示例模板</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <!-- ═══ CENTER PANEL ═════════════════════════════════════ -->
+        <section class="center-panel">
+          <article class="analysis-card workspace-card">
+            <div class="workspace-hero">
+              <div>
+                <h2>临床统计分析</h2>
+                <p>选择检验方法，导入数据，配置变量，执行统计分析与可视化。</p>
+              </div>
+              <div class="workspace-status" id="datasetMeta">未载入数据</div>
+            </div>
+
+            <nav class="tabs workspace-tabs" aria-label="workspace tabs">
+              <button class="tab active" data-tab="overview">数据概览</button>
+              <button class="tab" data-tab="analysis">分析结果</button>
+              <button class="tab" data-tab="chart">可视化</button>
+              <button class="tab" data-tab="descriptive">描述统计</button>
+            </nav>
+
+            <!-- Overview Tab -->
+            <section class="tab-panel active" id="tab-overview">
+              <div class="overview-workspace">
+                <div class="summary-strip" id="metricGrid">
+                  <div class="summary-card"><span>N</span><strong>--</strong><small>样本</small></div>
+                  <div class="summary-card"><span>Vars</span><strong>--</strong><small>变量</small></div>
+                  <div class="summary-card"><span>Missing</span><strong>--</strong><small>缺失%</small></div>
+                  <div class="summary-card"><span>Method</span><strong>--</strong><small>检验</small></div>
+                </div>
+                <div id="previewTable" class="compact-table-wrap">
+                  <div class="empty-state small">等待数据载入</div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Analysis Results Tab -->
+            <section class="tab-panel" id="tab-analysis">
+              <div class="analysis-head">
+                <h3 id="analysisTitle">分析结果</h3>
+                <div class="analysis-tools">
+                  <span id="resultBadge" class="badge">等待</span>
+                  <div id="analysisExportBar" class="figure-actions chart-download-wrap" style="display:none;">
+                    <a href="#" class="export-btn" data-fmt="excel">Excel</a>
+                    <a href="#" class="export-btn" data-fmt="csv">CSV</a>
+                    <a href="#" class="export-btn" data-fmt="html">HTML</a>
+                    <a href="#" class="export-btn" data-fmt="clipboard">复制</a>
+                  </div>
+                </div>
+              </div>
+
+              <div id="resultSummary" class="result-summary">
+                <div class="empty-state">请在左侧选择检验方法、载入数据并点击执行分析</div>
+              </div>
+
+              <div id="resultTableContainer" class="compact-table-wrap" style="margin-top:12px;"></div>
+              <div id="groupStatsContainer" class="compact-table-wrap" style="margin-top:12px;"></div>
+              <div id="postHocContainer" class="compact-table-wrap" style="margin-top:12px;"></div>
+            </section>
+
+            <!-- Chart Tab -->
+            <section class="tab-panel" id="tab-chart">
+              <div class="analysis-head">
+                <h3 id="chartPreviewTitle">统计图形</h3>
+                <div class="analysis-tools">
+                  <span id="chartPreviewBadge" class="badge">Plotly</span>
+                  <div id="chartExportBar" class="figure-actions chart-download-wrap" style="display:none;">
+                    <button id="chartDownloadBtn" class="download-menu-btn" type="button" aria-haspopup="menu" aria-expanded="false">
+                      <span class="download-menu-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" focusable="false">
+                          <path d="M12 3v10m0 0 4-4m-4 4-4-4M5 15v4h14v-4" />
+                        </svg>
+                      </span>
+                      <span class="download-menu-copy">
+                        <strong>下载图像</strong>
+                      </span>
+                      <span class="download-menu-caret" aria-hidden="true">▾</span>
+                    </button>
+                    <div id="chartDownloadMenu" class="download-menu" role="menu" hidden>
+                      <button class="download-option" type="button" data-fmt="png" role="menuitem">
+                        <span>PNG</span><small>高清位图</small>
+                      </button>
+                      <button class="download-option" type="button" data-fmt="svg" role="menuitem">
+                        <span>SVG</span><small>矢量图</small>
+                      </button>
+                      <button class="download-option" type="button" data-fmt="tiff" role="menuitem">
+                        <span>TIFF</span><small>期刊位图</small>
+                      </button>
+                      <button class="download-option" type="button" data-fmt="pdf" role="menuitem">
+                        <span>PDF</span><small>当前预览版式</small>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div id="chartPreviewContainer">
+                <div class="empty-state">执行分析后可查看统计图形</div>
+              </div>
+            </section>
+
+            <!-- Descriptive Tab -->
+            <section class="tab-panel" id="tab-descriptive">
+              <div class="analysis-head">
+                <h3>描述统计</h3>
+                <span>所有变量的描述性统计量</span>
+              </div>
+              <div class="field-row" style="margin-bottom:10px;">
+                <label>选择变量（留空为全部数值变量）</label>
+                <select id="descVarSelect" multiple size="5"></select>
+              </div>
+              <button id="runDescriptiveBtn" class="generate-btn" style="margin-bottom:10px;">生成描述统计</button>
+              <div id="descriptiveTableContainer" class="compact-table-wrap">
+                <div class="empty-state small">尚未生成描述统计表</div>
+              </div>
+            </section>
+          </article>
+        </section>
+
+        <!-- ═══ RIGHT PANEL ═══════════════════════════════════════ -->
+        <aside class="panel right-param-panel">
           <div class="panel-section">
             <div class="panel-head">
               <span class="step">03</span>
@@ -111,141 +238,64 @@
             </div>
           </div>
 
+          <div class="panel-section">
+            <div class="panel-head">
+              <span class="step">05</span>
+              <div>
+                <h2>外观设置</h2>
+                <p>图表主题与精细参数</p>
+              </div>
+            </div>
+
+            <div class="field-row">
+              <label for="chartTitleInput">图表标题</label>
+              <input id="chartTitleInput" type="text" placeholder="输入图表标题（可选）" />
+            </div>
+
+            <div class="field-row">
+              <label for="chartThemeSelect">图表主题</label>
+              <select id="chartThemeSelect">
+                <option value="cnsTheme">CNS 出版风格</option>
+                <option value="clinicalTheme">CHARLS 临床风格</option>
+                <option value="journalTheme">经典期刊风格</option>
+                <option value="natureStyleTheme">Nature 风格</option>
+                <option value="lancetTheme">Lancet 风格</option>
+                <option value="nejmTheme">NEJM 风格</option>
+                <option value="scienceTheme">Science 风格</option>
+                <option value="warmTheme">暖色调风格</option>
+                <option value="coolTheme">冷色调风格</option>
+                <option value="pastelTheme">柔和马卡龙</option>
+                <option value="darkMutedTheme">深色低调风格</option>
+                <option value="monoTheme">单色灰阶风格</option>
+              </select>
+            </div>
+
+            <div id="appearanceControls"></div>
+          </div>
+
           <div class="panel-section panel-section-action">
-            <button id="runAnalysisBtn" class="generate-btn">执行分析</button>
+            <button id="generateChartBtn" class="generate-btn">执行分析</button>
           </div>
 
           <div id="statusStack" class="status-stack">
             <div class="status-item active">等待操作</div>
           </div>
         </aside>
-
-        <section class="center-panel">
-          <section class="panel overview-panel">
-            <div class="panel-head inline">
-              <span class="step sm">概览</span>
-              <div>
-                <h2>数据概览</h2>
-                <p id="datasetMeta">未载入数据</p>
-              </div>
-            </div>
-            <div class="summary-strip" id="metricGrid">
-              <div class="summary-card"><span>N</span><strong>--</strong><small>样本</small></div>
-              <div class="summary-card"><span>Vars</span><strong>--</strong><small>变量</small></div>
-              <div class="summary-card"><span>Missing</span><strong>--</strong><small>缺失%</small></div>
-              <div class="summary-card"><span>Method</span><strong>--</strong><small>检验</small></div>
-            </div>
-            <div id="previewTable" class="compact-table-wrap">
-              <div class="empty-state small">等待数据载入</div>
-            </div>
-          </section>
-
-          <nav class="tabs" aria-label="result tabs">
-            <button class="tab active" data-tab="analysis">分析结果</button>
-            <button class="tab" data-tab="descriptive">描述统计</button>
-            <button class="tab" data-tab="chart">可视化</button>
-          </nav>
-
-          <section class="tab-panel active" id="tab-analysis">
-            <article class="analysis-card">
-              <div class="analysis-head">
-                <h3 id="analysisTitle">分析结果</h3>
-                <div class="analysis-tools">
-                  <span id="resultBadge" class="badge">等待</span>
-                  <div id="analysisExportBar" class="figure-actions" style="display:none;">
-                    <a href="#" class="export-btn" data-fmt="excel">Excel</a>
-                    <a href="#" class="export-btn" data-fmt="csv">CSV</a>
-                    <a href="#" class="export-btn" data-fmt="html">HTML</a>
-                    <a href="#" class="export-btn" data-fmt="clipboard">复制</a>
-                  </div>
-                </div>
-              </div>
-
-              <div id="resultSummary" class="result-summary">
-                <div class="empty-state">请在左侧选择检验方法、载入数据并点击执行分析</div>
-              </div>
-
-              <div id="resultTableContainer" class="compact-table-wrap" style="margin-top:12px;"></div>
-              <div id="groupStatsContainer" class="compact-table-wrap" style="margin-top:12px;"></div>
-              <div id="postHocContainer" class="compact-table-wrap" style="margin-top:12px;"></div>
-            </article>
-          </section>
-
-          <section class="tab-panel" id="tab-descriptive">
-            <article class="analysis-card">
-              <div class="analysis-head">
-                <h3>描述统计</h3>
-                <span>所有变量的描述性统计量</span>
-              </div>
-              <div class="field-row" style="margin-bottom:10px;">
-                <label>选择变量（留空为全部数值变量）</label>
-                <select id="descVarSelect" multiple size="5"></select>
-              </div>
-              <button id="runDescriptiveBtn" class="generate-btn" style="margin-bottom:10px;">生成描述统计</button>
-              <div id="descriptiveTableContainer" class="compact-table-wrap">
-                <div class="empty-state small">尚未生成描述统计表</div>
-              </div>
-            </article>
-          </section>
-
-          <section class="tab-panel" id="tab-chart">
-            <article class="analysis-card">
-              <div class="analysis-head">
-                <h3 id="chartPreviewTitle">统计图形</h3>
-                <div class="analysis-tools">
-                  <select id="chartThemeSelect" class="theme-select" title="选择图表主题">
-                    <option value="CNS">CNS 顶刊</option>
-                    <option value="Nature">Nature</option>
-                    <option value="Lancet">Lancet</option>
-                    <option value="NEJM">NEJM</option>
-                    <option value="Science">Science</option>
-                    <option value="warm">暖色系</option>
-                    <option value="cool">冷色系</option>
-                    <option value="pastel">柔和色</option>
-                    <option value="dark_muted">暗色系</option>
-                    <option value="mono">黑白灰</option>
-                  </select>
-                  <span id="chartPreviewBadge" class="badge">Plotly</span>
-                  <div id="chartExportBar" class="figure-actions" style="display:none;">
-                    <a href="#" class="chart-export-btn" data-chart-fmt="png">PNG</a>
-                    <a href="#" class="chart-export-btn" data-chart-fmt="svg">SVG</a>
-                    <a href="#" class="chart-export-btn" data-chart-fmt="pdf">PDF</a>
-                  </div>
-                </div>
-              </div>
-              <div id="chartPreviewContainer">
-                <div class="empty-state">执行分析后可查看统计图形</div>
-              </div>
-            </article>
-          </section>
-
-          <div class="bottom-export-row">
-            <div class="export-section">
-              <h4>结果导出</h4>
-              <div id="downloadList" class="download-list empty">执行分析后可导出</div>
-            </div>
-            <div class="export-section">
-              <h4>示例数据</h4>
-              <div id="exampleList" class="download-list">
-                <span class="hint-text">选择检验方法后可下载对应示例</span>
-              </div>
-            </div>
-          </div>
-        </section>
       </section>
     </main>
 
     <div id="toastContainer" class="toast-container"></div>
 
-    <script src="/static/js/utils.js?v=2.2.0"></script>
-    <script src="/static/js/chartThemes.js?v=2.2.0"></script>
-    <script src="/static/js/plotConfigs.js?v=2.2.0"></script>
-    <script src="/static/js/upload.js?v=2.2.0"></script>
-    <script src="/static/js/variableSelect.js?v=2.2.0"></script>
-    <script src="/static/js/tableGenerator.js?v=2.2.0"></script>
-    <script src="/static/js/dataPreview.js?v=2.2.0"></script>
-    <script src="/static/js/analysis.js?v=2.2.0"></script>
-    <script src="/static/js/download.js?v=2.2.0"></script>
-    <script src="/static/js/app.js?v=2.2.0"></script>
+    <script src="/static/js/utils.js?v=4.0.0"></script>
+    <script src="/static/js/chartThemes.js?v=4.0.0"></script>
+    <script src="/static/js/plotConfigs.js?v=4.0.0"></script>
+    <script src="/static/js/upload.js?v=4.0.0"></script>
+    <script src="/static/js/variableSelect.js?v=4.0.0"></script>
+    <script src="/static/js/tableGenerator.js?v=4.0.0"></script>
+    <script src="/static/js/dataPreview.js?v=4.0.0"></script>
+    <script src="/static/js/analysis.js?v=4.0.0"></script>
+    <script src="/static/js/charts.js?v=4.0.0"></script>
+    <script src="/static/js/download.js?v=4.0.0"></script>
+    <script src="/static/js/app.js?v=4.0.0"></script>
   </body>
 </html>

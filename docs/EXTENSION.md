@@ -30,6 +30,8 @@ def new_test(df: pd.DataFrame, var: str, group_var: str) -> dict:
 
 关键约定：返回字典必须包含 `test_type`、`test_name`、`statistic`、`p_value`、`significant`、`method`、`summary`、`details`、`descriptive_stats`、`chart_data` 字段。
 
+若检验无 P 值（如模型性能指标），`p_value` 设为 `None`，`significant` 基于性能指标判断。若检验失败，返回 `{"error": "错误信息"}`。
+
 ### 2. 注册到路由
 
 在 `app/main.py` 的 `run_analysis()` 中添加分支：
@@ -66,30 +68,39 @@ EXAMPLE_MAKERS = {
 
 ### 4. 添加前端配置
 
-在 `app/static/js/utils.js` 的 `TEST_CATALOG` 中添加：
+在 `app/static/js/analysis.js` 的 `TEST_CATALOG` 中添加：
 
 ```javascript
 new_test: {
   id: "new_test",
   name: "新检验方法",
-  category: "parametric",  // parametric | nonparametric | categorical
+  category: "parametric",  // parametric | nonparametric | categorical | correlation | survival | regression
   icon: "NT",
   description: "新检验方法的简要说明",
   exampleDataset: "new_test_example",
-  requiresGroup: true,
-  requiresPaired: false,
-  supportsPostHoc: false,
-  varType: "continuous",  // continuous | categorical
+  requiresGroup: true,        // 是否需要分组变量
+  requiresPaired: false,      // 是否需要配对变量
+  requiresSubject: false,     // 是否需要受试者ID（重复测量/Friedman）
+  requiresTimeEvent: false,   // 是否需要时间+事件变量（生存分析）
+  requiresCovariate: false,   // 是否需要协变量（ANCOVA）
+  requiresMultiVar: false,    // 是否需要多个预测变量（回归/判别）
+  supportsPostHoc: false,     // 是否支持事后检验
+  varType: "continuous",      // continuous | categorical
 },
 ```
 
-### 5. 添加默认变量映射
+### 5. 添加变量选择槽位
 
-在 `app/static/js/variableSelect.js` 的 `TEST_DEFAULT_VARS` 中添加：
+在 `app/static/js/variableSelect.js` 的 `getChartVarSlots()` 函数的 `slotsMap` 中添加变量选择器槽位定义：
 
 ```javascript
-new_test: { var: 'outcome', group_var: 'group' },
+new_test: [
+  { name: 'y_var', label: '分析变量（连续）', optional: false },
+  { name: 'x_var', label: '分组变量', optional: false },
+],
 ```
+
+支持的槽位名称：`y_var`、`x_var`、`paired_var`、`group_var`、`subject_var`、`time_var`、`event_var`、`covar`、`value_vars`（多选）、`outcome_var`、`color_var`。
 
 ## 添加新的示例数据集
 
@@ -120,17 +131,20 @@ def _post_hoc_new_method(groups: dict, alpha: float = 0.05) -> list[dict]:
     return comparisons
 ```
 
-### 2. 添加到前端下拉选项
+### 2. 注册到前端事后检验选项
 
-在 `app/static/index.html` 的 `#postHocSelect` 中添加：
+事后检验方法通过 `STATE.postHocMethod` 动态管理，无需修改 HTML。需要添加的包括：
 
-```html
-<option value="new_method">New Method</option>
-```
+1. 在分析执行时通过 `body.post_hoc` 传递给后端。
+2. 在检验函数中根据 `post_hoc` 参数执行对应的两两比较逻辑。
 
-### 3. 在分析路由中处理
+## 添加结果讨论支持
 
-在 `app/main.py` 中传递 `post_hoc` 参数给对应的检验函数。
+在 `app/services/result_service.py` 中为新检验类型添加临床解读：
+
+1. 在 `_effect_items()` 中添加效应/临床含义描述。
+2. 在 `_method_items()` 中添加方法学注意事项。
+3. 在 `_report_items()` 中添加报告建议模板。
 
 ## 添加新的导出格式
 
