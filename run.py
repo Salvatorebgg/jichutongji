@@ -1,4 +1,4 @@
-"""One-click launch script for Clinical Statistics Platform."""
+"""One-click launch script for Basic Clinical Statistics Platform."""
 import sys
 from pathlib import Path
 
@@ -10,7 +10,7 @@ if __name__ == "__main__":
     uvicorn.run(
         "app.main:app",
         host="127.0.0.1",
-        port=8868,
+        port=8765,
         reload=False,
         log_level="info",
     )

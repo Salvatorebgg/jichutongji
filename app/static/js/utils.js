@@ -20,6 +20,7 @@ const STATE = {
   currentPlotlyLayout: null,
   currentTableData: null,
   currentChartSourceData: null,
+  currentStatChartData: null,
   currentChartParams: null,
   currentChartResizeObserver: null,
   chartTheme: 'cnsTheme',

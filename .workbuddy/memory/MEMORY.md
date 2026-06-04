@@ -3,8 +3,8 @@
 ## 项目概要
 - 路径: `D:\BaiduSyncdisk\document\workdocument\task\网站搭建\临床\工具\tongjifangan\jichutongji`
 - 技术栈: FastAPI + 原生 JS/HTML/CSS 前端，Plotly.js 图表
-- 功能: 临床数据统计分析一键化平台，20+统计方法
-- 运行: `python -m uvicorn app.main:app --host 127.0.0.1 --port 8868`
+- 功能: 临床基础统计分析平台，22种统计方法，6大类（参数/非参数/分类资料/相关分析/生存分析/回归判别）
+- 运行: `python run.py` (默认端口 8765)，或 `python -m uvicorn app.main:app --host 127.0.0.1 --port 8765`
 - 依赖: numpy, pandas, scipy, scikit-learn, lifelines, statsmodels, fastapi, uvicorn
 
 ## 关键架构
@@ -50,3 +50,15 @@
   - renderStatChart() 中给 plotMount 设置明确 width/height/minHeight
   - 给 Plotly layout 设置 width/height/autosize:false 确保图表渲染
   - chartExportBar 在分析完成后自动显示（flex）
+
+### 2026-06-04: 生存分析 (log_rank) 完全无结果
+- **根因1**: `app/main.py:241` 中 `var` 为空字符串但 log_rank 未被加入豁免列表，始终返回 400
+- **根因2**: `stats_service.py` 的 `log_rank_test()` 只处理2组比较，不计算KM曲线，chart_data无实际数据
+- **根因3**: 前端 `buildStatPlotFromChartData()` 缺少 survival 图表类型处理器
+- **修复**:
+  - main.py 第241行豁免列表加入 `"log_rank"`
+  - `log_rank_test()` 重写：支持多组pairwise比较 + KM曲线计算（优先lifelines，回退手动实现）
+  - 新增 `_compute_km_curves()` 辅助函数
+  - `analysis.js` 新增 `buildStatPlotFromChartData` 中 type==='survival' 分支
+- **端口**: 从 8868 改为 8765（避免与 Basicpicture 冲突）
+- **配色**: styles.css 同步 Basicpicture 蓝色调色板 (teal→blue)

@@ -89,7 +89,17 @@ new_test: {
 },
 ```
 
-### 5. 添加变量选择槽位
+### 5. 添加默认变量映射
+
+在 `app/static/js/analysis.js` 的 `getTestDefaultParams()` 函数中添加新检验的默认变量映射：
+
+```javascript
+new_test: { y_var: 'outcome_column', x_var: 'group_column' },
+```
+
+这样当用户选择该检验并加载示例数据时，变量槽位会自动填充对应的列名。
+
+### 6. 添加变量选择槽位
 
 在 `app/static/js/variableSelect.js` 的 `getChartVarSlots()` 函数的 `slotsMap` 中添加变量选择器槽位定义：
 
@@ -186,7 +196,7 @@ def export_table_format(req: ExportRequest) -> FileResponse:
 每次新增检验方法或接口后建议运行：
 
 ```bash
-python tests\smoke.py
+python tests/smoke.py
 python -m compileall app
 ```
 

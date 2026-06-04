@@ -263,6 +263,34 @@ function getTestConfig(testId) {
   return TEST_CATALOG[testId] || null;
 }
 
+function getTestDefaultParams(testId) {
+  const defaults = {
+    t_test_independent: { y_var: 'sbp_reduction', x_var: 'group' },
+    t_test_paired: { y_var: 'sbp_before', paired_var: 'sbp_after' },
+    one_sample_t_test: { y_var: 'ldl_change' },
+    normality_test: { y_var: 'biomarker' },
+    levene_test: { y_var: 'response_value', x_var: 'group' },
+    anova: { y_var: 'efficacy_score', x_var: 'treatment' },
+    repeated_measures_anova: { y_var: 'sbp', x_var: 'time', subject_var: 'subject_id' },
+    ancova: { y_var: 'sbp_followup', x_var: 'treatment', covar: 'sbp_baseline' },
+    mann_whitney: { y_var: 'crp_level', x_var: 'group' },
+    kruskal_wallis: { y_var: 'biomarker_level', x_var: 'disease_stage' },
+    wilcoxon_signed_rank: { y_var: 'pain_before', paired_var: 'pain_after' },
+    friedman: { y_var: 'pain_score', x_var: 'timepoint', subject_var: 'subject_id' },
+    chi_square: { y_var: 'outcome', x_var: 'treatment' },
+    fisher_exact: { y_var: 'outcome', x_var: 'group' },
+    mcnemar: { y_var: 'diagnosis_standard', paired_var: 'diagnosis_new' },
+    pearson_correlation: { y_var: 'age', paired_var: 'bmi' },
+    spearman_correlation: { y_var: 'glucose', paired_var: 'crp' },
+    log_rank: { time_var: 'survival_time', event_var: 'event', x_var: 'treatment' },
+    logistic_regression: { y_var: 'outcome', value_vars: ['age', 'bmi', 'glucose', 'cholesterol'] },
+    linear_regression: { y_var: 'sbp', value_vars: ['age', 'bmi', 'glucose', 'cholesterol'] },
+    discriminant_analysis: { y_var: 'diagnosis_group', value_vars: ['age', 'bmi', 'sbp', 'glucose', 'cholesterol', 'crp'] },
+    quadratic_discriminant_analysis: { y_var: 'diagnosis_group', value_vars: ['age', 'bmi', 'sbp', 'glucose', 'cholesterol', 'crp'] },
+  };
+  return defaults[testId] || {};
+}
+
 /* ── Statistical Analysis Execution ───────────────────── */
 async function runAnalysis() {
   const config = getTestConfig(STATE.activeChartType);
@@ -294,6 +322,7 @@ async function runAnalysis() {
 
     STATE.currentStatResult = data.result;
     STATE.currentResult = data.result;  // for app.js compatibility
+    STATE.currentStatChartData = data.result?.chart_data || null;
     STATE.currentDiscussion = data.discussion || null;
     STATE.currentTableData = data.tables?.result || null;  // full table object with columns + rows
     STATE.currentStatTables = data.tables || null;
@@ -472,18 +501,18 @@ function renderStatThreeLineTable(tableData) {
 
 function renderDiscussionBlock(discussion) {
   if (!discussion) return '';
-  let html = '<div style="margin-top:10px;padding:12px 14px;border:1px solid var(--line);border-radius:8px;background:rgba(0,0,0,0.01);">';
+  let html = '<div class="result-discussion">';
   if (discussion.headline) {
-    html += `<div style="font-weight:700;color:var(--ink);margin-bottom:8px;">${escapeHtml(discussion.headline)}</div>`;
+    html += `<div class="discussion-headline">${escapeHtml(discussion.headline)}</div>`;
   }
   (discussion.sections || []).forEach(section => {
-    html += '<div style="margin-bottom:8px;">';
-    html += `<span style="font-weight:650;color:var(--text);">${escapeHtml(section.title || '')}</span>`;
-    html += '<ul style="margin:4px 0 0;padding-left:18px;">';
+    html += '<section class="discussion-section">';
+    html += `<h4>${escapeHtml(section.title || '')}</h4>`;
+    html += '<ul>';
     (section.items || []).forEach(item => {
-      html += `<li style="font-size:12px;color:var(--muted);">${escapeHtml(item)}</li>`;
+      html += `<li>${escapeHtml(item)}</li>`;
     });
-    html += '</ul></div>';
+    html += '</ul></section>';
   });
   html += '</div>';
   return html;
@@ -597,13 +626,23 @@ function renderStatChart(result, fullResult) {
   const varName = params.var || '';
   const groupVar = params.group_var || '';
   const pairedVar = params.paired_var || '';
-  const titleText = params.title || (el('chartTitleInput') ? el('chartTitleInput').value : '') || result.test_name || '';
   const tt = result.test_type;
-  const chartType = tt;
+  let chartType = tt;
 
   let traces = [];
-  let layout = { title: { text: titleText } };
 
+  const chartData = result.chart_data || fullResult?.chart_data || STATE.currentStatChartData || null;
+  const customTitle = (params.title || (el('chartTitleInput') ? el('chartTitleInput').value : '') || '').trim();
+  const titleText = customTitle || chartData?.title || result.test_name || '';
+  let layout = { title: { text: titleText } };
+  const backendPlot = buildStatPlotFromChartData(chartData, titleText);
+  if (backendPlot) {
+    traces = backendPlot.traces || [];
+    layout = backendPlot.layout || layout;
+    chartType = backendPlot.chartType || chartType;
+  }
+
+  if (!backendPlot) {
   try {
     if (tt === 't_test_independent' && varName && groupVar && rawData[varName] && rawData[groupVar]) {
       const groups = [...new Set(rawData[groupVar].filter(v => v !== '' && v != null))];
@@ -845,6 +884,7 @@ function renderStatChart(result, fullResult) {
   } catch (e) {
     console.warn('Stat chart computation failed:', e);
   }
+  }
 
   // No chart data — show placeholder and clear state
   if (traces.length === 0) {
@@ -902,6 +942,369 @@ function renderStatChart(result, fullResult) {
 function _statPalette() {
   const theme = typeof getActiveTheme === 'function' ? getActiveTheme() : {};
   return (theme.colorway || ['#2E6F9E', '#D95F59', '#2A9D8F', '#E9A93A', '#6F5AA7', '#7C8B52']);
+}
+
+function buildStatPlotFromChartData(chartData, titleText) {
+  if (!chartData || !chartData.chart_type) return null;
+  const type = chartData.chart_type;
+  const title = titleText || chartData.title || '';
+
+  if (type === 'box_violin') {
+    const traces = [];
+    (chartData.traces || []).forEach((row, i) => {
+      const name = String(row.name ?? `Group ${i + 1}`);
+      const values = cleanStatNumeric(row.values || []);
+      if (!values.length) return;
+      const x = Array(values.length).fill(name);
+      traces.push({
+        type: 'violin',
+        x,
+        y: values,
+        name,
+        points: false,
+        hoveron: 'violins',
+        side: 'both',
+        spanmode: 'soft',
+        showlegend: false,
+        meta: { colorIndex: i },
+      });
+      traces.push({
+        type: 'box',
+        x,
+        y: values,
+        name,
+        boxmean: 'sd',
+        boxpoints: 'all',
+        jitter: 0.22,
+        pointpos: 0,
+        width: 0.28,
+        meta: { colorIndex: i },
+      });
+    });
+    return {
+      chartType: 'violin_box_scatter',
+      traces,
+      layout: {
+        title: { text: title || chartData.title || '' },
+        xaxis: { title: { text: chartData.x_label || '' }, type: 'category' },
+        yaxis: { title: { text: chartData.y_label || 'Value' } },
+        violinmode: 'overlay',
+        boxmode: 'overlay',
+      },
+    };
+  }
+
+  if (type === 'paired_box') {
+    const a = cleanStatNumeric(chartData.var_1_values || []);
+    const b = cleanStatNumeric(chartData.var_2_values || []);
+    const n = Math.min(a.length, b.length);
+    const left = String(chartData.var_1_name || 'Before');
+    const right = String(chartData.var_2_name || 'After');
+    const traces = [];
+    for (let i = 0; i < Math.min(n, 120); i++) {
+      traces.push({
+        type: 'scatter',
+        mode: 'lines',
+        x: [left, right],
+        y: [a[i], b[i]],
+        name: 'paired trajectory',
+        showlegend: false,
+        hoverinfo: 'skip',
+        meta: { fixedColor: '#94A3B8', visualRole: 'backgroundTrajectory' },
+      });
+    }
+    [
+      { name: left, values: a.slice(0, n), colorIndex: 0 },
+      { name: right, values: b.slice(0, n), colorIndex: 1 },
+    ].forEach(row => {
+      traces.push({
+        type: 'box',
+        x: Array(row.values.length).fill(row.name),
+        y: row.values,
+        name: row.name,
+        boxmean: 'sd',
+        boxpoints: 'all',
+        jitter: 0.18,
+        width: 0.28,
+        meta: { colorIndex: row.colorIndex },
+      });
+    });
+    return {
+      chartType: 'paired_box',
+      traces,
+      layout: {
+        title: { text: title || chartData.title || '' },
+        xaxis: { title: { text: '' }, type: 'category' },
+        yaxis: { title: { text: chartData.y_label || 'Value' } },
+      },
+    };
+  }
+
+  if (type === 'bar_grouped' || type === 'paired_bar') {
+    const categories = (chartData.categories || []).map(String);
+    const series = type === 'paired_bar'
+      ? [
+          { name: chartData.var_1_name || 'Variable 1', values: chartData.var_1_counts || [] },
+          { name: chartData.var_2_name || 'Variable 2', values: chartData.var_2_counts || [] },
+        ]
+      : (chartData.series || []);
+    const traces = series.map((row, i) => {
+      const values = (row.values || []).map(v => Number(v) || 0);
+      return {
+        type: 'bar',
+        name: String(row.name ?? `Series ${i + 1}`),
+        x: categories,
+        y: values,
+        text: values.map(v => String(v)),
+        meta: { colorIndex: i },
+      };
+    });
+    return {
+      chartType: 'bar_grouped',
+      traces,
+      layout: {
+        title: { text: title || chartData.title || '' },
+        barmode: 'group',
+        bargap: 0.18,
+        xaxis: { title: { text: chartData.x_label || '' }, type: 'category' },
+        yaxis: { title: { text: chartData.y_label || 'Count' } },
+      },
+    };
+  }
+
+  if (type === 'scatter_regression') {
+    const pairs = cleanStatPairs(chartData.x_values || [], chartData.y_values || []);
+    const x = pairs.map(p => p.x);
+    const y = pairs.map(p => p.y);
+    const traces = [{
+      type: 'scatter',
+      mode: 'markers',
+      name: 'Data',
+      x,
+      y,
+      meta: { colorIndex: 0 },
+    }];
+    const fit = fitStatLine(x, y);
+    if (fit) {
+      const xs = [Math.min(...x), Math.max(...x)];
+      traces.push({
+        type: 'scatter',
+        mode: 'lines',
+        name: 'Fit',
+        x: xs,
+        y: xs.map(v => fit.slope * v + fit.intercept),
+        line: { dash: 'solid' },
+        meta: { colorIndex: 1 },
+      });
+    }
+    const annotation = chartData.r != null ? [{
+      x: 0.02,
+      y: 0.98,
+      xref: 'paper',
+      yref: 'paper',
+      xanchor: 'left',
+      yanchor: 'top',
+      text: `r = ${chartData.r}, p = ${chartData.p_value}`,
+      showarrow: false,
+      bgcolor: 'rgba(255,255,255,0.86)',
+      bordercolor: '#E2E8F0',
+      borderwidth: 1,
+      borderpad: 5,
+      font: { size: 11 },
+    }] : [];
+    return {
+      chartType: 'scatter',
+      traces,
+      layout: {
+        title: { text: title || chartData.title || '' },
+        xaxis: { title: { text: chartData.x_var || 'X' } },
+        yaxis: { title: { text: chartData.y_var || 'Y' } },
+        annotations: annotation,
+      },
+    };
+  }
+
+  if (type === 'histogram') {
+    const first = (chartData.traces || [])[0] || {};
+    const values = cleanStatNumeric(first.values || []);
+    return {
+      chartType: 'histogram',
+      traces: [{
+        type: 'histogram',
+        x: values,
+        nbinsx: 28,
+        name: String(first.name || chartData.x_label || 'Value'),
+        meta: { colorIndex: 0 },
+      }],
+      layout: {
+        title: { text: title || chartData.title || '' },
+        bargap: 0.04,
+        xaxis: { title: { text: chartData.x_label || '' } },
+        yaxis: { title: { text: chartData.y_label || 'Count' } },
+      },
+    };
+  }
+
+  if (type === 'repeated_measures') {
+    const groups = (chartData.groups || []).map(String);
+    const values = chartData.values || {};
+    const matrix = groups.map(g => cleanStatNumeric(values[g] || []));
+    const lengths = matrix.map(row => row.length).filter(Boolean);
+    if (!groups.length || !lengths.length) return null;
+    const n = Math.min(...lengths);
+    const traces = [];
+    for (let i = 0; i < Math.min(n, 120); i++) {
+      traces.push({
+        type: 'scatter',
+        mode: 'lines',
+        x: groups,
+        y: matrix.map(row => row[i]),
+        showlegend: false,
+        hoverinfo: 'skip',
+        meta: { fixedColor: '#94A3B8', visualRole: 'backgroundTrajectory' },
+      });
+    }
+    traces.push({
+      type: 'scatter',
+      mode: 'lines+markers',
+      name: 'Mean',
+      x: groups,
+      y: matrix.map(row => statMean(row.slice(0, n))),
+      meta: { colorIndex: 0 },
+    });
+    return {
+      chartType: 'repeated_measures',
+      traces,
+      layout: {
+        title: { text: title || chartData.title || '' },
+        xaxis: { title: { text: chartData.x_label || 'Time / condition' }, type: 'category' },
+        yaxis: { title: { text: chartData.y_label || 'Value' } },
+      },
+    };
+  }
+
+  if (type === 'discriminant_scores') {
+    const labels = (chartData.labels || []).map(v => String(v));
+    const pairs = cleanStatPairs(chartData.x_values || [], chartData.y_values || [], labels);
+    const classes = (chartData.classes && chartData.classes.length)
+      ? chartData.classes.map(String)
+      : [...new Set(pairs.map(p => p.label).filter(Boolean))];
+    const traces = [];
+    classes.forEach((className, i) => {
+      const rows = pairs.filter(p => String(p.label) === String(className));
+      if (!rows.length) return;
+      traces.push({
+        type: 'scatter',
+        mode: 'markers',
+        name: className,
+        x: rows.map(p => p.x),
+        y: rows.map(p => p.y),
+        meta: { colorIndex: i },
+      });
+      if (rows.length >= 3) {
+        traces.push({
+          type: 'scatter',
+          mode: 'markers',
+          name: `${className} center`,
+          x: [statMean(rows.map(p => p.x))],
+          y: [statMean(rows.map(p => p.y))],
+          showlegend: false,
+          marker: { symbol: 'x', size: 14, line: { color: '#111827', width: 1.1 } },
+          meta: { colorIndex: i },
+        });
+      }
+    });
+    return {
+      chartType: 'scatter',
+      traces,
+      layout: {
+        title: { text: title || chartData.title || '' },
+        xaxis: { title: { text: chartData.x_label || 'LD1' }, zeroline: true, zerolinewidth: 1, zerolinecolor: '#CBD5E1' },
+        yaxis: { title: { text: chartData.y_label || 'LD2' }, zeroline: true, zerolinewidth: 1, zerolinecolor: '#CBD5E1' },
+        legend: { orientation: 'h', x: 0.5, xanchor: 'center', y: -0.16, yanchor: 'top' },
+      },
+    };
+  }
+
+  if (type === 'survival') {
+    const curves = chartData.km_curves || [];
+    if (!curves.length) return null;
+    const traces = curves.map((curve, i) => ({
+      type: 'scatter',
+      mode: 'lines',
+      name: String(curve.name || `Group ${i + 1}`),
+      x: (curve.times || []).map(Number),
+      y: (curve.survival || []).map(Number),
+      meta: { colorIndex: i },
+      line: { shape: 'hv', width: 2.2 },
+    }));
+    // Add risk table annotation if time_var info available
+    const xLabel = chartData.time_var || 'Time';
+    return {
+      chartType: 'survival',
+      traces,
+      layout: {
+        title: { text: title || chartData.title || 'Kaplan-Meier 生存曲线' },
+        xaxis: { title: { text: xLabel }, rangemode: 'nonnegative' },
+        yaxis: { title: { text: 'Survival probability' }, range: [0, 1.02] },
+        hovermode: 'x unified',
+      },
+    };
+  }
+
+  return null;
+}
+
+function cleanStatNumeric(values) {
+  return (values || [])
+    .map(v => Number(v))
+    .filter(v => Number.isFinite(v));
+}
+
+function cleanStatPairs(xValues, yValues, labels) {
+  const rows = [];
+  const n = Math.min((xValues || []).length, (yValues || []).length);
+  for (let i = 0; i < n; i++) {
+    const x = Number(xValues[i]);
+    const y = Number(yValues[i]);
+    if (Number.isFinite(x) && Number.isFinite(y)) {
+      rows.push({ x, y, label: labels ? labels[i] : undefined });
+    }
+  }
+  return rows;
+}
+
+function fitStatLine(x, y) {
+  const n = Math.min((x || []).length, (y || []).length);
+  if (n < 2) return null;
+  const xs = x.slice(0, n);
+  const ys = y.slice(0, n);
+  const mx = statMean(xs);
+  const my = statMean(ys);
+  let num = 0;
+  let den = 0;
+  for (let i = 0; i < n; i++) {
+    num += (xs[i] - mx) * (ys[i] - my);
+    den += (xs[i] - mx) ** 2;
+  }
+  if (den === 0) return null;
+  const slope = num / den;
+  return { slope, intercept: my - slope * mx };
+}
+
+function statMean(values) {
+  const clean = (values || []).filter(v => Number.isFinite(Number(v))).map(Number);
+  if (!clean.length) return null;
+  return clean.reduce((sum, v) => sum + v, 0) / clean.length;
+}
+
+function rerenderCurrentStatChart() {
+  if (!STATE.currentStatResult) return false;
+  renderStatChart(STATE.currentStatResult, STATE.currentStatResult || {});
+  if (STATE.activeTab === 'chart' && STATE.currentPlotlyData && STATE.currentPlotlyData.length > 0) {
+    renderChart(STATE.currentPlotlyData, STATE.currentPlotlyLayout);
+  }
+  return true;
 }
 
 // Approximate inverse normal CDF (Abramowitz & Stegun)

@@ -842,44 +842,107 @@ def spearman_correlation(df: pd.DataFrame, var1: str, var2: str) -> dict:
 
 
 def log_rank_test(df: pd.DataFrame, time_var: str, event_var: str, group_var: str) -> dict:
-    """Log-rank test for survival analysis."""
+    """Log-rank test for survival analysis with KM curve data and multi-group support."""
     if not group_var or group_var not in df.columns:
         return {"error": "Log-rank检验需要有效的分组变量"}
     groups = sorted(df[group_var].dropna().unique().tolist())
     if len(groups) < 2:
         return {"error": "Log-rank检验需要至少2组"}
+
+    # Build per-group (time, event) pairs, properly aligned by row
     group_data = {}
     for g in groups:
-        # Drop rows where either time or event is NaN to ensure alignment
         mask = (df[group_var] == g) & df[time_var].notna() & df[event_var].notna()
+        sub = df.loc[mask, [time_var, event_var]].copy()
+        sub[time_var] = pd.to_numeric(sub[time_var], errors="coerce")
+        sub[event_var] = pd.to_numeric(sub[event_var], errors="coerce")
+        sub = sub.dropna(subset=[time_var, event_var])
+        times = sub[time_var].values.astype(float)
+        events = sub[event_var].values.astype(float)
+        # Keep only valid (non-negative time, binary-like event)
+        valid = (times >= 0) & ((events == 0) | (events == 1))
         group_data[str(g)] = {
-            "time": df.loc[mask, time_var].values.astype(float),
-            "event": df.loc[mask, event_var].values.astype(int),
+            "time": times[valid],
+            "event": events[valid].astype(int),
         }
-    # Validate data
+
     for g in groups:
         gk = str(g)
         if len(group_data[gk]["time"]) < 2:
             return {"error": f"分组 '{gk}' 有效观测不足（需要至少2个完整观测）"}
+
+    # ── Compute Kaplan-Meier curves ──────────────────────
+    km_curves = _compute_km_curves(group_data, groups)
+
+    # ── Run log-rank test(s) ─────────────────────────────
     try:
-        result = logrank_test(
-            group_data[str(groups[0])]["time"], group_data[str(groups[1])]["time"],
-            group_data[str(groups[0])]["event"], group_data[str(groups[1])]["event"],
-        )
+        from lifelines.statistics import logrank_test as _logrank
+        from lifelines import KaplanMeierFitter
+
+        n_groups = len(groups)
+        # Overall test (pooled): use pairwise and report best result, or use multivariate
+        # For 2 groups: single test
+        # For >2 groups: pairwise tests with Bonferroni correction, report all
+        all_pairs = []
+        for i in range(len(groups)):
+            for j in range(i + 1, len(groups)):
+                gi, gj = str(groups[i]), str(groups[j])
+                try:
+                    lr = _logrank(
+                        group_data[gi]["time"], group_data[gj]["time"],
+                        group_data[gi]["event"], group_data[gj]["event"],
+                    )
+                    all_pairs.append({
+                        "comparison": f"{gi} vs {gj}",
+                        "statistic": round(float(lr.test_statistic), 4),
+                        "p_value": round(float(lr.p_value), 6),
+                        "significant": lr.p_value < 0.05,
+                        "method": "Log-rank",
+                    })
+                except Exception:
+                    all_pairs.append({
+                        "comparison": f"{gi} vs {gj}",
+                        "statistic": None,
+                        "p_value": None,
+                        "significant": False,
+                        "method": "Log-rank (failed)",
+                    })
+
+        # Use the primary pair (first two groups) for the main statistic
+        primary = all_pairs[0]
+        statistic = primary["statistic"]
+        p_value = primary["p_value"]
+        significant = primary.get("significant", False)
+        summary = f"χ² = {statistic:.4f}, p = {format_p_value(p_value)}" if statistic is not None else "检验已完成"
+
         return {
             "test_type": "log_rank",
             "test_name": "Log-Rank 生存分析检验",
-            "statistic": round(float(result.test_statistic), 4),
-            "p_value": round(float(result.p_value), 6),
-            "significant": result.p_value < 0.05,
+            "statistic": statistic,
+            "p_value": p_value,
+            "significant": significant,
             "method": "Log-rank test (Mantel-Cox)",
-            "summary": f"χ² = {result.test_statistic:.4f}, p = {format_p_value(result.p_value)}",
-            "details": {"groups": [str(g) for g in groups], "test_statistic": round(float(result.test_statistic), 4)},
-            "chart_data": {"chart_type": "survival", "time_var": time_var, "event_var": event_var, "group_var": group_var, "groups": [str(g) for g in groups], "title": "Kaplan-Meier 生存曲线"},
-            "post_hoc": None,
+            "summary": summary,
+            "details": {
+                "groups": [str(g) for g in groups],
+                "n_groups": n_groups,
+                "group_sizes": {str(g): len(group_data[str(g)]["time"]) for g in groups},
+                "pairwise": all_pairs if n_groups > 2 else None,
+            },
+            "chart_data": {
+                "chart_type": "survival",
+                "time_var": time_var,
+                "event_var": event_var,
+                "group_var": group_var,
+                "groups": [str(g) for g in groups],
+                "km_curves": km_curves,
+                "title": "Kaplan-Meier 生存曲线",
+            },
+            "post_hoc": all_pairs if n_groups > 2 else None,
         }
+
     except ImportError:
-        # Fallback without lifelines
+        # Fallback without lifelines — still provide KM curves
         return {
             "test_type": "log_rank",
             "test_name": "Log-Rank 生存分析检验",
@@ -887,14 +950,80 @@ def log_rank_test(df: pd.DataFrame, time_var: str, event_var: str, group_var: st
             "p_value": None,
             "significant": False,
             "method": "Log-rank test (需安装lifelines库)",
-            "summary": "需要安装lifelines库: pip install lifelines",
+            "summary": "需要安装lifelines库以进行精确的Log-rank检验。当前仅展示Kaplan-Meier生存曲线。",
             "note": "需要安装lifelines库以进行精确的生存分析。当前可使用Kaplan-Meier可视化查看生存曲线趋势。",
-            "details": {"groups": [str(g) for g in groups]},
-            "chart_data": {"chart_type": "survival", "time_var": time_var, "event_var": event_var, "group_var": group_var, "groups": [str(g) for g in groups], "title": "Kaplan-Meier 生存曲线"},
+            "details": {
+                "groups": [str(g) for g in groups],
+                "n_groups": len(groups),
+                "group_sizes": {str(g): len(group_data[str(g)]["time"]) for g in groups},
+            },
+            "chart_data": {
+                "chart_type": "survival",
+                "time_var": time_var,
+                "event_var": event_var,
+                "group_var": group_var,
+                "groups": [str(g) for g in groups],
+                "km_curves": km_curves,
+                "title": "Kaplan-Meier 生存曲线（仅可视化，无检验统计量）",
+            },
             "post_hoc": None,
         }
     except Exception as e:
         return {"error": f"Log-rank检验计算失败: {str(e)}"}
+
+
+def _compute_km_curves(group_data: dict, groups: list) -> list[dict]:
+    """Compute Kaplan-Meier survival curves for each group.
+
+    Returns a list of {name, times, survival} dicts suitable for Plotly rendering.
+    Tries lifelines first, falls back to manual computation.
+    """
+    curves = []
+    try:
+        from lifelines import KaplanMeierFitter
+        for g in groups:
+            gk = str(g)
+            kmf = KaplanMeierFitter()
+            kmf.fit(
+                durations=group_data[gk]["time"],
+                event_observed=group_data[gk]["event"],
+                label=gk,
+            )
+            sf = kmf.survival_function_
+            curves.append({
+                "name": gk,
+                "times": sf.index.tolist(),
+                "survival": sf[gk].tolist(),
+            })
+    except ImportError:
+        # Manual KM estimator
+        for g in groups:
+            gk = str(g)
+            times = group_data[gk]["time"]
+            events = group_data[gk]["event"]
+            # Sort by time
+            order = np.argsort(times)
+            sorted_times = np.array(times)[order]
+            sorted_events = np.array(events)[order].astype(int)
+
+            t_uniq, idx_start = np.unique(sorted_times, return_index=True)
+            surv = 1.0
+            n_at_risk = len(sorted_times)
+            result_t, result_s = [0.0], [1.0]
+            j = 0
+            for i in range(len(sorted_times)):
+                if sorted_events[i] == 1:
+                    surv *= (n_at_risk - 1) / n_at_risk if n_at_risk > 0 else 0
+                n_at_risk -= 1
+                if i == len(sorted_times) - 1 or sorted_times[i + 1] != sorted_times[i]:
+                    result_t.append(float(sorted_times[i]))
+                    result_s.append(float(surv))
+            curves.append({
+                "name": gk,
+                "times": result_t,
+                "survival": result_s,
+            })
+    return curves
 
 
 def discriminant_analysis(

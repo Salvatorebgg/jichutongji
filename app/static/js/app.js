@@ -65,6 +65,8 @@ function selectTest(testId) {
 
   STATE.activeChartType = testId;
   STATE.currentResult = null;
+  STATE.currentStatResult = null;
+  STATE.currentStatChartData = null;
   STATE.currentPlotlyData = null;
   STATE.currentPlotlyLayout = null;
   STATE.currentChartData = null;
@@ -110,6 +112,8 @@ function selectTest(testId) {
 }
 
 function resetResults() {
+  STATE.currentStatResult = null;
+  STATE.currentStatChartData = null;
   const summaryContainer = el('resultSummary');
   if (summaryContainer) {
     const config = typeof getTestConfig === 'function' ? getTestConfig(STATE.activeChartType) : null;
@@ -299,24 +303,39 @@ function closeChartDownloadMenu() {
 // ── Theme Selector ──────────────────────────────────────
 function initThemeSelector() {
   const sel = el('chartThemeSelect');
-  if (!sel) return;
-  sel.value = STATE.chartTheme || 'cnsTheme';
-  sel.addEventListener('change', () => {
-    STATE.chartTheme = sel.value;
-    STATE.userColors = null;
-    renderAppearanceControls();
-    toast('主题: ' + (typeof CHART_THEMES !== 'undefined' && CHART_THEMES[sel.value]?.name || sel.value), 'info');
-    if (STATE.currentPlotlyData && STATE.currentPlotlyData.length > 0) {
-      // Re-compute chart with new theme
-      if (typeof runAnalysis === 'function' && typeof getTestConfig === 'function' && getTestConfig(STATE.activeChartType)) {
-        // For statistical tests: re-run renderStatChart to recompute with new theme
-        if (STATE.currentStatResult) {
-          renderStatChart(STATE.currentStatResult, STATE.currentResult || {});
-        }
-      }
+  if (sel) {
+    sel.value = STATE.chartTheme || 'cnsTheme';
+    sel.addEventListener('change', () => {
+      STATE.chartTheme = sel.value;
+      STATE.userColors = null;
+      renderAppearanceControls();
+      toast('主题: ' + (typeof CHART_THEMES !== 'undefined' && CHART_THEMES[sel.value]?.name || sel.value), 'info');
+      refreshCurrentVisualization();
+    });
+  }
+
+  const titleInput = el('chartTitleInput');
+  if (titleInput && !titleInput.dataset.boundStatTitleRefresh) {
+    titleInput.dataset.boundStatTitleRefresh = 'true';
+    let titleTimer = null;
+    titleInput.addEventListener('input', () => {
+      window.clearTimeout(titleTimer);
+      titleTimer = window.setTimeout(() => refreshCurrentVisualization(), 220);
+    });
+  }
+}
+
+function refreshCurrentVisualization() {
+  if (typeof rerenderCurrentStatChart === 'function' && rerenderCurrentStatChart()) {
+    return true;
+  }
+  if (STATE.currentPlotlyData && STATE.currentPlotlyData.length > 0) {
+    if (STATE.activeTab === 'chart') {
       renderChart(STATE.currentPlotlyData, STATE.currentPlotlyLayout);
     }
-  });
+    return true;
+  }
+  return false;
 }
 
 function buildThemedLayout(baseLayout, themeName) {
@@ -428,11 +447,16 @@ function updateDownloadList() {
 
   if (STATE.currentResult) {
     list.className = 'download-list';
+    const chartLinks = STATE.currentPlotlyData ? `
+      <a class="download-link" href="#" onclick="event.preventDefault();downloadChartImage('png');"><span>导出 PNG 图</span><small>高清位图</small></a>
+      <a class="download-link" href="#" onclick="event.preventDefault();downloadChartImage('svg');"><span>导出 SVG 图</span><small>矢量图</small></a>
+      <a class="download-link" href="#" onclick="event.preventDefault();downloadChartImage('tiff');"><span>导出 TIFF 图</span><small>期刊位图</small></a>
+      <a class="download-link" href="#" onclick="event.preventDefault();downloadChartImage('pdf');"><span>导出 PDF 图</span><small>当前预览版式</small></a>
+    ` : '';
     list.innerHTML = `
       <a class="download-link" href="#" onclick="event.preventDefault();exportTableExcel();"><span>导出 Excel</span><small>结果表格</small></a>
       <a class="download-link" href="#" onclick="event.preventDefault();exportTableCSV();"><span>导出 CSV</span><small>结果表格</small></a>
-      ${STATE.currentPlotlyData ? '<a class="download-link" href="#" onclick="event.preventDefault();downloadChartImage(\'png\');"><span>导出 PNG 图</span><small>统计图形</small></a>' : ''}
-      ${STATE.currentPlotlyData ? '<a class="download-link" href="#" onclick="event.preventDefault();downloadChartImage(\'svg\');"><span>导出 SVG 图</span><small>矢量图</small></a>' : ''}
+      ${chartLinks}
     `;
   } else {
     const exampleName = config.exampleDataset || 'general_clinical_example';
@@ -469,6 +493,7 @@ function buildVarControls() {
     return;
   }
 
+  const defaults = typeof getTestDefaultParams === 'function' ? getTestDefaultParams(STATE.activeChartType) : {};
   const cols = STATE.columns || [];
   // Convert grouped variableTypes {continuous: [...], binary: [...], ...}
   // to per-column lookup {colName: 'continuous', ...}
@@ -480,11 +505,15 @@ function buildVarControls() {
     }
   }
   const continuousCols = cols.filter(c => colTypeMap[c] === 'continuous' || colTypeMap[c] === 'numeric' || colTypeMap[c] === 'date');
-  const categoricalCols = cols.filter(c => colTypeMap[c] === 'categorical' || colTypeMap[c] === 'binary' || colTypeMap[c] === 'group');
+  const categoricalCols = cols.filter(c => colTypeMap[c] === 'categorical' || colTypeMap[c] === 'binary' || colTypeMap[c] === 'group' || colTypeMap[c] === 'outcome_candidate');
   const allNumCols = cols.filter(c => {
     const t = colTypeMap[c];
     return t === 'continuous' || t === 'numeric' || t === 'binary' || t === 'date';
   });
+  const pickDefault = (values, candidates) => {
+    const wanted = (Array.isArray(values) ? values : [values]).filter(Boolean).map(String);
+    return (candidates || []).find(c => wanted.includes(String(c))) || '';
+  };
 
   let html = '';
 
@@ -492,13 +521,15 @@ function buildVarControls() {
   const varLabel = config.varType === 'categorical' ? '分类变量' : '连续变量';
   let varCandidates = config.varType === 'categorical' ? categoricalCols : continuousCols;
   if (varCandidates.length === 0) varCandidates = cols;
-  html += buildSelectField('var', varLabel, varCandidates, '选择分析变量', true);
+  const mainDefault = pickDefault([defaults.var, defaults.y_var], varCandidates);
+  html += buildSelectField('var', varLabel, varCandidates, '选择分析变量', true, mainDefault);
 
   // Group variable
   if (config.requiresGroup) {
     let groupCandidates = categoricalCols;
     if (groupCandidates.length === 0) groupCandidates = cols;
-    html += buildSelectField('group_var', '分组变量', groupCandidates, '选择分组变量（如治疗组/对照组）', true);
+    const groupDefault = pickDefault([defaults.group_var, defaults.x_var], groupCandidates);
+    html += buildSelectField('group_var', '分组变量', groupCandidates, '选择分组变量（如治疗组/对照组）', true, groupDefault);
   }
 
   // Paired / second variable
@@ -508,7 +539,8 @@ function buildVarControls() {
     let pairedCandidates = config.varType === 'categorical' ? categoricalCols : continuousCols;
     if (pairedCandidates.length === 0) pairedCandidates = cols;
     // Default to second candidate (different from var) for paired variable
-    const pairedDefault = pairedCandidates.find(c => c !== varCandidates[0]) || pairedCandidates[0];
+    const pairedDefault = pickDefault(defaults.paired_var, pairedCandidates)
+      || pairedCandidates.find(c => c !== (mainDefault || varCandidates[0])) || pairedCandidates[0];
     html += buildSelectField('paired_var', pairedLabel, pairedCandidates, '选择配对或第二个变量', true, pairedDefault);
   }
 
@@ -516,35 +548,48 @@ function buildVarControls() {
   if (config.requiresSubject) {
     let subjectCandidates = cols.filter(c => colTypeMap[c] === 'id' || colTypeMap[c] === 'binary');
     if (subjectCandidates.length === 0) subjectCandidates = cols;
-    html += buildSelectField('subject_var', '受试者ID', subjectCandidates, '选择受试者/患者标识变量', true);
+    const subjectDefault = pickDefault(defaults.subject_var, subjectCandidates);
+    html += buildSelectField('subject_var', '受试者ID', subjectCandidates, '选择受试者/患者标识变量', true, subjectDefault);
   }
 
   // Time + Event for survival
   if (config.requiresTimeEvent) {
     let timeCandidates = continuousCols;
     if (timeCandidates.length === 0) timeCandidates = cols;
-    html += buildSelectField('time_var', '时间变量', timeCandidates, '选择生存时间变量', true);
+    const timeDefault = pickDefault(defaults.time_var, timeCandidates);
+    html += buildSelectField('time_var', '时间变量', timeCandidates, '选择生存时间变量', true, timeDefault);
     let eventCandidates = categoricalCols;
     if (eventCandidates.length === 0) eventCandidates = cols;
-    html += buildSelectField('event_var', '事件变量', eventCandidates, '选择事件状态变量（0/1）', true);
+    const eventDefault = pickDefault(defaults.event_var, eventCandidates);
+    html += buildSelectField('event_var', '事件变量', eventCandidates, '选择事件状态变量（0/1）', true, eventDefault);
   }
 
   // Covariate for ANCOVA
   if (config.requiresCovariate) {
     let covarCandidates = continuousCols;
     if (covarCandidates.length === 0) covarCandidates = cols;
-    html += buildSelectField('covar', '协变量', covarCandidates, '选择需要控制的协变量', true);
+    const covarDefault = pickDefault(defaults.covar, covarCandidates);
+    html += buildSelectField('covar', '协变量', covarCandidates, '选择需要控制的协变量', true, covarDefault);
   }
 
   // Multi-variable for regression/discriminant
   if (config.requiresMultiVar) {
     let multiCandidates = allNumCols;
     if (multiCandidates.length === 0) multiCandidates = cols;
+    let selectedValues = Array.isArray(defaults.value_vars)
+      ? defaults.value_vars.filter(v => multiCandidates.some(c => String(c) === String(v)))
+      : [];
+    if (selectedValues.length === 0) {
+      selectedValues = multiCandidates
+        .filter(c => String(c) !== String(mainDefault || ''))
+        .slice(0, Math.min(6, multiCandidates.length));
+    }
     html += '<div class="field-row">';
     html += '<label>预测变量（可多选）</label>';
     html += `<select id="chartVar_value_vars" class="chart-var-select" multiple size="5">`;
     multiCandidates.forEach(c => {
-      html += `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`;
+      const selected = selectedValues.some(v => String(v) === String(c)) ? ' selected' : '';
+      html += `<option value="${escapeHtml(c)}"${selected}>${escapeHtml(c)}</option>`;
     });
     html += '</select>';
     html += '<small>按住 Ctrl/Cmd 多选</small>';
@@ -760,9 +805,7 @@ function renderAppearanceControls() {
       STATE.userColors[Number(e.target.dataset.idx)] = e.target.value;
     });
     input.addEventListener('change', () => {
-      if (STATE.currentPlotlyData && STATE.currentPlotlyData.length > 0) {
-        renderChart(STATE.currentPlotlyData, STATE.currentPlotlyLayout);
-      }
+      refreshCurrentVisualization();
     });
   });
 
@@ -771,9 +814,7 @@ function renderAppearanceControls() {
     resetBtn.addEventListener('click', () => {
       STATE.userColors = null;
       renderAppearanceControls();
-      if (STATE.currentPlotlyData && STATE.currentPlotlyData.length > 0) {
-        renderChart(STATE.currentPlotlyData, STATE.currentPlotlyLayout);
-      }
+      refreshCurrentVisualization();
     });
   }
 
@@ -786,9 +827,7 @@ function renderAppearanceControls() {
       if (valSpan) valSpan.textContent = markerSlider.value;
     });
     markerSlider.addEventListener('change', () => {
-      if (STATE.currentPlotlyData && STATE.currentPlotlyData.length > 0) {
-        renderChart(STATE.currentPlotlyData, STATE.currentPlotlyLayout);
-      }
+      refreshCurrentVisualization();
     });
   }
 
@@ -800,9 +839,7 @@ function renderAppearanceControls() {
       if (valSpan) valSpan.textContent = lineSlider.value;
     });
     lineSlider.addEventListener('change', () => {
-      if (STATE.currentPlotlyData && STATE.currentPlotlyData.length > 0) {
-        renderChart(STATE.currentPlotlyData, STATE.currentPlotlyLayout);
-      }
+      refreshCurrentVisualization();
     });
   }
 
@@ -814,9 +851,7 @@ function renderAppearanceControls() {
       if (valSpan) valSpan.textContent = opacitySlider.value;
     });
     opacitySlider.addEventListener('change', () => {
-      if (STATE.currentPlotlyData && STATE.currentPlotlyData.length > 0) {
-        renderChart(STATE.currentPlotlyData, STATE.currentPlotlyLayout);
-      }
+      refreshCurrentVisualization();
     });
   }
 }

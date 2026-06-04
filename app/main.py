@@ -75,9 +75,9 @@ for name, maker_fn in EXAMPLE_MAKERS.items():
             pass
 
 app = FastAPI(
-    title="Clinical Statistics Analysis Platform",
+    title="Basic Clinical Statistics Platform",
     version="2.0.0",
-    description="临床数据统计分析一键化平台 — 集成20+临床统计方法、出版级可视化与三线表生成",
+    description="临床基础统计分析 — 集成22种临床统计方法、出版级可视化、三线表与基线特征表生成",
 )
 
 app.add_middleware(
@@ -238,7 +238,7 @@ def run_analysis(req: AnalyzeRequest) -> dict:
     post_hoc = req.post_hoc
 
     if not var or var not in df.columns:
-        if test_type not in ("logistic_regression", "linear_regression", "ancova"):
+        if test_type not in ("logistic_regression", "linear_regression", "ancova", "log_rank"):
             raise HTTPException(status_code=400, detail=f"Variable '{var}' not found in dataset")
 
     try:
